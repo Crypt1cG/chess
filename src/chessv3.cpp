@@ -143,7 +143,7 @@ void Canvas::render(wxGCDC& gcdc)
             {
                 wxBitmap bmp;
                 // make path
-                std::string path = "res/png/"; // im using the pngs on windows, bmp not working
+                std::string path = "../res/png/"; // im using the pngs on windows, bmp not working
                 if (Game::getColor(game.board[i]) == Game::whiteID)
                     path += "w";
                 else path += "b";
