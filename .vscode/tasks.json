@@ -1,0 +1,65 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: g++.exe build active file",
+			"command": "g++",
+			"args": [
+				"${file}",
+				// "${fileDirname}\\*.cpp",
+				"-g",		
+				// "-I${fileDirname}\\*.cpp",
+				"-Wall",
+				"-Wextra",
+				// optimizations:
+				"-Ofast",
+				"-funroll-loops",
+
+				"-IN:\\CppLibraries\\wxWidgets-3.1.5\\lib\\gcc_lib\\mswud",
+				"-IN:\\CppLibraries\\wxWidgets-3.1.5\\include",
+				"-LN:\\CppLibraries\\wxWidgets-3.1.5\\lib\\gcc_lib\\",
+				"-lwxmsw31ud_core",
+				"-lwxbase31ud",
+				"-lwxtiffd",
+				"-lwxjpegd",
+				"-lwxpngd",
+				"-lwxzlibd",
+				"-lwxregexud",
+				"-lwxexpatd",
+				"-lkernel32",
+				"-luser32",
+				"-lgdi32",
+				"-lcomdlg32",
+				"-lwinspool",
+				"-lwinmm",
+				"-lshell32",
+				"-lshlwapi",
+				"-lcomctl32",
+				"-lole32",
+				"-loleaut32",
+				"-luuid",
+				"-lrpcrt4",
+				"-ladvapi32",
+				"-lversion",
+				"-lwsock32",
+				"-lwininet",
+				"-loleacc",
+				"-luxtheme",
+				"-o",
+				"${fileDirname}\\${fileBasenameNoExtension}.exe"
+			],
+			"options": {
+				"cwd": "N:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: \"N:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/g++.exe\""
+		}
+	]
+}

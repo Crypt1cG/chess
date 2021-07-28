@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${default}",
+                "N:\\CppLibraries\\wxWidgets-3.1.5\\include",
+                "N:\\CppLibraries\\wxWidgets-3.1.5\\lib\\gcc_lib\\mswud"
+            ],
+            "compilerPath": "N:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/g++.exe"
+        }
+    ],
+    "version": 4
+}

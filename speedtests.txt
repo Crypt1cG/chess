@@ -1,0 +1,50 @@
+all results start from 
+    rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -
+with engine playing as white (depth 5)
+
+original:
+1. Evaluated 89941194 positions in 29957.9 ms
+2. Evaluated 89941194 positions in 30050.6 ms
+3. Evaluated 89941194 positions in 32431.5 ms
+4. Evaluated 89941194 positions in 31563.6 ms
+5. Evaluated 89941194 positions in 33523.6 ms
+AVG = 31505.44
+
+#1 all 1-liner game functions (except makePiece) are inline now
+1. Evaluated 89941194 positions in 31923.1 ms
+2. Evaluated 89941194 positions in 33508.1 ms
+3. Evaluated 89941194 positions in 33143.5 ms
+4. Evaluated 89941194 positions in 33356.3 ms
+5. Evaluated 89941194 positions in 29875.4 ms
+AVG = 32361.28 (2.7% slower than original)
+
+#2 original but knight move list is now a class member
+1. Evaluated 89941194 positions in 31342.2 ms
+2. Evaluated 89941194 positions in 28984.5 ms
+3. Evaluated 89941194 positions in 30930.3 ms
+4. Evaluated 89941194 positions in 29923 ms
+5. Evaluated 89941194 positions in 29278.7 ms
+AVG = 30091.74 (4.5% faster than original)
+
+#3 = #2 w/ #2's optimization also applied to the king
+1. Evaluated 89941194 positions in 30807.6 ms
+2. Evaluated 89941194 positions in 29129.1 ms
+3. Evaluated 89941194 positions in 30800.6 ms
+4. Evaluated 89941194 positions in 30342.9 ms
+5. Evaluated 89941194 positions in 29213.9 ms
+AVG = 30058.82 (4.6% faster than original)
+
+
+27510.5
+27544.4
+29982.8
+30125.4
+29920
+AVG = 29016.62
+
+29899
+30102.5
+29368.5
+29537
+30351.8
+AVG = 29851.76
