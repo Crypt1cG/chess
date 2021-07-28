@@ -3,7 +3,6 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
-#include <forward_list>
 
 // #define getColor(x) ((x & 0b0000001000) >> 3)
 // #define getID(x) (x & 0b0000000111)
@@ -23,7 +22,7 @@ public:
     int* currTurn; // 0 for white, 1 for black
     int wInCheck;
     int bInCheck;
-    std::vector<std::array<int, 2>> currSelectedPossibleCoords;
+    std::vector<int> currSelectedPossibleCoords;
 
     static const int pawnID = 1;
     static const int knightID = 2;

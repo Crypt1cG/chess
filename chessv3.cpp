@@ -8,7 +8,7 @@
 #include <vector>
 #include <chrono>
 // #include "chessPiecesv2.cpp" // included in chessai
-#include "chessAiRewrite.cpp"
+#include "chessAiRewritev2.cpp"
 // #include "game.cpp"
 
 #define AI_ENABLED true
@@ -225,10 +225,10 @@ void Canvas::render(wxGCDC& gcdc)
         //         finalMoves.push_back(std::make_tuple(std::get<0>(t), std::get<1>(t)));
         //     }
         // }
-        for (std::array<int, 2> m : game.currSelectedPossibleCoords)
+        for (int m : game.currSelectedPossibleCoords)
         {
-            int x = m[0];
-            int y = m[1];
+            int x = m % 8;
+            int y = m / 8;
             if (y >= 0 && y < 8)
             {
                 gcdc.SetBrush(*wxLIGHT_GREY_BRUSH);
@@ -296,8 +296,9 @@ void Canvas::OnMouseClick(wxMouseEvent& evt)
                     newY = (sqY * -1) - 1;
                 else // black promoting
                     newY = 15 - sqY; // it just works
-                std::array<int, 2> newCoords = {{sqX, newY}};
-                if (std::find(game.currSelectedPossibleCoords.begin(), game.currSelectedPossibleCoords.end(), newCoords) != game.currSelectedPossibleCoords.end())
+                    
+                int newPos = newY * 8 + sqX;
+                if (std::find(game.currSelectedPossibleCoords.begin(), game.currSelectedPossibleCoords.end(), newPos) != game.currSelectedPossibleCoords.end())
                 {
                     game.movePiece(Game::getX(game.currSelectedPiece), Game::getY(game.currSelectedPiece), sqX, newY, game.board);
                     *(game.currTurn) = !*(game.currTurn);
@@ -318,11 +319,11 @@ void Canvas::OnMouseClick(wxMouseEvent& evt)
                 }
                 else
                 {
-                    std::array<int, 2> coords = {{sqX, sqY}};
+                    int pos = sqY * 8 + sqX;
                     if (game.currSelectedPossibleCoords.size() != 0 && 
                         std::find(game.currSelectedPossibleCoords.begin(), 
                                   game.currSelectedPossibleCoords.end(), 
-                                  coords) != game.currSelectedPossibleCoords.end())
+                                  pos) != game.currSelectedPossibleCoords.end())
                     {
                         game.movePiece(Game::getX(game.currSelectedPiece), Game::getY(game.currSelectedPiece), sqX, sqY, game.board);
                         *(game.currTurn) = !*(game.currTurn);
