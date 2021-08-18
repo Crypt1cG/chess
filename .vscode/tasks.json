@@ -3,54 +3,42 @@
 	"tasks": [
 		{
 			"type": "cppbuild",
-			"label": "C/C++: g++.exe build active file",
-			"command": "g++",
+			"label": "C/C++: g++ build active file",
+			"command": "/usr/bin/g++",
+			// "command": "/bin/g++",
 			"args": [
+				"-g",
 				"${file}",
-				// "${fileDirname}\\*.cpp",
-				"-g",		
-				// "-I${fileDirname}\\*.cpp",
-				"-Wall",
-				"-Wextra",
-				// optimizations:
+
+				// optimizations
 				"-Ofast",
+				// "-O2",
 				"-funroll-loops",
 
-				"-IN:\\CppLibraries\\wxWidgets-3.1.5\\lib\\gcc_lib\\mswud",
-				"-IN:\\CppLibraries\\wxWidgets-3.1.5\\include",
-				"-LN:\\CppLibraries\\wxWidgets-3.1.5\\lib\\gcc_lib\\",
-				"-lwxmsw31ud_core",
-				"-lwxbase31ud",
-				"-lwxtiffd",
-				"-lwxjpegd",
-				"-lwxpngd",
-				"-lwxzlibd",
-				"-lwxregexud",
-				"-lwxexpatd",
-				"-lkernel32",
-				"-luser32",
-				"-lgdi32",
-				"-lcomdlg32",
-				"-lwinspool",
-				"-lwinmm",
-				"-lshell32",
-				"-lshlwapi",
-				"-lcomctl32",
-				"-lole32",
-				"-loleaut32",
-				"-luuid",
-				"-lrpcrt4",
-				"-ladvapi32",
-				"-lversion",
-				"-lwsock32",
-				"-lwininet",
-				"-loleacc",
-				"-luxtheme",
+				// from wx-config-gtk3 --libs
+				"-pthread",
+				"-lwx_gtk3u_xrc-3.0",
+				"-lwx_gtk3u_webview-3.0",
+				"-lwx_gtk3u_html-3.0",
+				"-lwx_gtk3u_qa-3.0",
+				"-lwx_gtk3u_adv-3.0",
+				"-lwx_gtk3u_core-3.0",
+				"-lwx_baseu_xml-3.0",
+				"-lwx_baseu_net-3.0",
+				"-lwx_baseu-3.0",
+				// from wx-config-gtk3 --cxxflags
+				"-I/usr/lib/wx/include/gtk3-unicode-3.0",
+				"-I/usr/include/wx-3.0",
+				"-D_FILE_OFFSET_BITS=64",
+				"-DWXUSINGDLL",
+				"-D__WXGTK__",
+				"-pthread",
+
 				"-o",
-				"${fileDirname}\\${fileBasenameNoExtension}.exe"
+				"${workspaceFolder}/bin/${fileBasenameNoExtension}"
 			],
 			"options": {
-				"cwd": "N:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin"
+				"cwd": "${fileDirname}"
 			},
 			"problemMatcher": [
 				"$gcc"
@@ -59,7 +47,7 @@
 				"kind": "build",
 				"isDefault": true
 			},
-			"detail": "compiler: \"N:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/g++.exe\""
+			"detail": "compiler: /usr/bin/g++"
 		}
 	]
 }

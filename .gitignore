@@ -1,2 +1,7 @@
 *.exe
 *.pyc
+**/[Tt]est.*
+# some vim stuff i think?
+*.swp
+*.txt
+bin/*

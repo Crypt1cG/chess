@@ -109,9 +109,11 @@ void Canvas::render(wxGCDC& gcdc)
     if (DEBUG) // debugger doesn't work with images apparently, have to use text
     {
         wxFontInfo fi(12);
-        fi.Family(wxFONTFAMILY_SWISS);
-        fi.Style(wxFONTSTYLE_NORMAL);
-        fi.Weight(wxFONTWEIGHT_NORMAL);
+        // fi.Family(wxFONTFAMILY_SWISS);
+        // fi.Style(wxFONTSTYLE_NORMAL);
+        fi = fi.Family(wxFONTFAMILY_SWISS);
+        // fi.Weight(wxFONTWEIGHT_NORMAL);
+        
         wxFont font(fi);
 
         gcdc.SetFont(font);
@@ -141,9 +143,10 @@ void Canvas::render(wxGCDC& gcdc)
         {
             if (!DEBUG)
             {
-                wxBitmap bmp;
+                // wxBitmap bmp;
                 // make path
-                std::string path = "../res/png/"; // im using the pngs on windows, bmp not working
+                // this is pretty trash, if code is moved, it will break
+                std::string path = "/home/cryptic/Coding/wxChess/res/png/"; // im using the pngs on windows, bmp not working
                 if (Game::getColor(game.board[i]) == Game::whiteID)
                     path += "w";
                 else path += "b";
@@ -170,7 +173,10 @@ void Canvas::render(wxGCDC& gcdc)
                 }
                 path += ".png"; // change to .bmp for bmp
 
-                bmp.LoadFile(path, wxBITMAP_TYPE_PNG);
+                wxImage img(path, wxBITMAP_TYPE_PNG);
+                // std::cout << img.IsOk() << std::endl;
+                // bmp.LoadFile(path, wxBITMAP_TYPE_PNG);
+                wxBitmap bmp(img);
                 gcdc.DrawBitmap(bmp, tlX, tlY);
             }
             else
@@ -227,9 +233,10 @@ void Canvas::render(wxGCDC& gcdc)
         // }
         for (int m : game.currSelectedPossibleCoords)
         {
+            //std::cout << m << std::endl;
             int x = m % 8;
             int y = m / 8;
-            if (y >= 0 && y < 8)
+            if (m >= 0 && y < 8)
             {
                 gcdc.SetBrush(*wxLIGHT_GREY_BRUSH);
                 gcdc.DrawCircle(x * sqWidth + sqWidth / 2, y * sqHeight + sqHeight / 2, sqWidth / 6);
@@ -237,12 +244,14 @@ void Canvas::render(wxGCDC& gcdc)
             }
             else // pawn promotion garbage
             {
-                if (y < 0) // white promoting
+                if (m < 0) // white promoting
                 {
+                    x = x + 8; // this corrects negative x values
+                    y = y - 1; // if m < -8 (queen promotions) y will be 0
                     int newY = (y + 1) * -1;
                     wxBitmap bmp;
                     // make path
-                    std::string path = "res/png/w"; // im using the pngs on windows, bmp not working
+                    std::string path = "/home/cryptic/Coding/wxChess/res/png/w"; // im using the pngs on windows, bmp not working
                     // if (Game::getColor(game.board[i]) == Game::whiteID)
                     //     path += "w";
                     // else path += "b";
@@ -260,7 +269,7 @@ void Canvas::render(wxGCDC& gcdc)
                     int newY = 7 - ((y - 1) - 7);
                     wxBitmap bmp;
                     // make path
-                    std::string path = "res/png/b"; // im using the pngs on windows, bmp not working
+                    std::string path = "/home/cryptic/Coding/wxChess/res/png/b"; // im using the pngs on windows, bmp not working
                     // if (Game::getColor(game.board[i]) == Game::whiteID)
                     //     path += "w";
                     // else path += "b";

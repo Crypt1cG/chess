@@ -35,10 +35,12 @@ public:
     static const std::array<std::vector<int>, 64> knightMoves; // {-15, -17, -6, 10, -10, 6, 15, 17}
     static const std::array<std::vector<int>, 64> kingMoves;
     static const std::array<std::array<std::vector<int>, 4>, 64> diagMoves;
+    inline static std::array<std::array<std::vector<int>, 4>, 64> rookMoves;
     Game()
     {
         // can clone board by just using =
         board = FENtoBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
+        // board = FENtoBoard("7k/2PK4/8/p7/r7/8/8/8 b - -");
         initDiag();
         // board = {{makePiece(0, 0, blackID, rookID), makePiece(1, 0, blackID, knightID), makePiece(2, 0, blackID, bishopID), makePiece(3, 0, blackID, queenID), makePiece(4, 0, blackID, kingID), makePiece(5, 0, blackID, bishopID), makePiece(6, 0, blackID, knightID), makePiece(7, 0, blackID, rookID),
         //           makePiece(0, 1, blackID, pawnID), makePiece(1, 1, blackID, pawnID),   makePiece(2, 1, blackID, pawnID),   makePiece(3, 1, blackID, pawnID),  makePiece(4, 1, blackID, pawnID), makePiece(5, 1, blackID, pawnID),   makePiece(6, 1, blackID, pawnID),   makePiece(7, 1, blackID, pawnID),
@@ -120,6 +122,98 @@ public:
      * @return the piece
      */
     static int makePiece(int x, int y, int color, int id) {return (x << 7) + (y << 4) + (color << 3) + id;}
+    
+    /**
+     * returns the algebraic notation of a square based on its index
+     * @param index the index of the square
+     * @return a string indicating the row and column of the square
+     */
+    static std::string indexToAlg(int index)
+    {
+        std::string result = "";
+        if (index >= 0 && index < 64)
+        {
+            char file = 'a';
+            int x = index % 8;
+            file += x;
+            result += file;
+            int y = 8 - index / 8;
+            result += std::to_string(y);
+            return result;
+        }
+        else if (index >= 64)
+        {
+            char file = 'a';
+            int x = index % 8;
+            file += x;
+            result += file;
+            result += '1';
+            int y = index / 8;
+            switch (y)
+            {
+            case 8:
+                result += 'q';
+                break;
+            case 9:
+                result += 'n';
+                break;
+            case 10:
+                result += 'b';
+                break;
+            case 11:
+                result += 'r';
+                break;
+            }
+            return result;
+        }
+        else return std::to_string(index);
+    }
+
+    static void printBoard(std::array<int, 69>& b)
+    {
+        int lowerDiff = 'a' - 'A';
+        std::string line = "+---+---+---+---+---+---+---+---+";
+        std::cout << line << std::endl;
+        for (int i = 0; i < 8; i++)
+        {
+            std::string row = "| ";
+            for (int j = 0; j < 8; j++)
+            {
+                char c;
+                if (b[i * 8 + j] != 0)
+                {
+                    int id = getID(b[i * 8 + j]);
+                    switch (id)
+                    {
+                    case pawnID:
+                        c = 'P';
+                        break;
+                    case knightID:
+                        c = 'N';
+                        break;
+                    case bishopID:
+                        c = 'B';
+                        break;
+                    case rookID:
+                        c = 'R';
+                        break;
+                    case queenID:
+                        c = 'Q';
+                        break;
+                    case kingID:
+                        c = 'K';
+                        break;
+                    }
+                    if (getColor(b[i * 8 + j]) == blackID) c += lowerDiff;
+                }
+                else c = ' ';
+                row += c;
+                row += " | ";
+            }
+            std::cout << row << std::endl;
+            std::cout << line << std::endl;
+        }
+    }
 
     /**
      * used to tell if/how a side can castle
@@ -206,8 +300,6 @@ public:
                     results.push_back(pos + 24 * dir); // knight promotion
                     results.push_back(pos + 32 * dir); // bishop
                     results.push_back(pos + 40 * dir); // rook
-
-
                 }
                 if (x + 1 < 8 && b[(y + dir) * 8 + x + 1] != 0 && getColor(b[(y + dir) * 8 + x + 1]) != color)
                 {
@@ -224,6 +316,63 @@ public:
                     results.push_back(pos - 1 + 40 * dir); // rook
                 }
             }
+            // int dir; // could probably make +-8
+            // if (color == whiteID) dir = -8;
+            // else dir = 8;
+            // if (pos + dir >= 8 && pos + dir < 56) // use 1 and 7 bc last rank promotes
+            // {
+            //     if (b[pos + dir] == 0)
+            //     {
+            //         results.push_back(pos + dir);
+            //         if ((color == whiteID && y == 6) || (color == blackID && y == 1))
+            //         {
+            //             if (b[pos + 2 * dir] == 0)
+            //                 results.push_back(pos + 2 * dir);
+            //         }
+            //     }
+            //     if (x - 1 >= 0 && b[pos + dir - 1] != 0)
+            //     {
+            //         if (getColor(b[pos + dir - 1]) != color)
+            //             results.push_back(pos + dir - 1);
+            //     }
+            //     if (x + 1 < 8 && b[pos + dir + 1] != 0)
+            //     {
+            //         if (getColor(b[pos + dir + 1]) != color)
+            //             results.push_back(pos + dir + 1);
+            //     }
+            //     // en passant
+            //     if ((color == whiteID && y == 3) || (color == blackID && y == 4))
+            //     {
+            //         if (canBeEnPassant(b, x + 1, y, b[65]))
+            //             results.push_back(pos + dir + 1);
+            //         if (canBeEnPassant(b, x - 1, y, b[65]))
+            //             results.push_back(pos + dir - 1);
+            //     }
+            // }
+            // else // if (y + dir == 0 || y + dir == 7) // last rank, promotion time
+            // {
+            //     if (b[pos + dir] == 0)
+            //     {
+            //         results.push_back(pos + 2 * dir); // queen promotion, should be y=-1 or y=8
+            //         results.push_back(pos + 3 * dir); // knight promotion
+            //         results.push_back(pos + 4 * dir); // bishop
+            //         results.push_back(pos + 5 * dir); // rook
+            //     }
+            //     if (x + 1 < 8 && b[pos + dir + 1] != 0 && getColor(b[pos + dir + 1]) != color)
+            //     {
+            //         results.push_back(pos + 1 + 2 * dir); // queen promotion, should be y=-1 or y=8
+            //         results.push_back(pos + 1 + 3 * dir); // knight promotion
+            //         results.push_back(pos + 1 + 4 * dir); // bishop
+            //         results.push_back(pos + 1 + 5 * dir); // rook
+            //     }
+            //     if (x - 1 >= 0 && b[pos + dir - 1] != 0 && getColor(b[pos + dir - 1]) != color)
+            //     {
+            //         results.push_back(pos - 1 + 2 * dir); // queen promotion, should be y=-1 or y=8
+            //         results.push_back(pos - 1 + 3 * dir); // knight promotion
+            //         results.push_back(pos - 1 + 4 * dir); // bishop
+            //         results.push_back(pos - 1 + 5 * dir); // rook
+            //     }
+            // }
             break;
         }
         case knightID:
@@ -399,6 +548,17 @@ public:
                 if (b[i * 8 + x] != 0)
                     break;
             }
+            // std::array<std::vector<int>, 4> moves = rookMoves[pos];
+            // for (std::vector<int>& dir : moves)
+            // {
+            //     for (int& m : dir)
+            //     {
+            //         if (b[m] == 0 || getColor(b[m]) != color)
+            //             results.emplace_back(m);
+            //         if (b[m] != 0)
+            //             break;
+            //     }
+            // }
             break;
         }
         case queenID:
@@ -547,6 +707,470 @@ public:
         return finalMoves;
     }
 
+    static std::vector<std::array<int, 2>> getMovesNew(std::array<int, 69>& b, int x, int y, bool allMoves=false)
+    {
+        int pos = y * 8 + x;
+        int piece = b[pos];
+        int id = getID(piece);
+        int color = getColor(piece);
+        std::vector<std::array<int, 2>> results;
+        switch (id)
+        {
+        case pawnID:
+        {
+            results.reserve(4); // max 4 pawn moves
+            int dir; // could probably make +-8
+            if (color == whiteID) dir = -1;
+            else dir = 1;
+            if (y + dir >= 1 && y + dir < 7) // use 1 and 7 bc last rank promotes
+            {
+                if (b[pos + dir * 8] == 0)
+                {
+                    results.push_back({pos, pos + dir * 8});
+                    if ((color == whiteID && y == 6) || (color == blackID && y == 1))
+                    {
+                        if (b[pos + 16 * dir] == 0)
+                            results.push_back({pos, pos + 16 * dir});
+                    }
+                }
+                if (x - 1 >= 0 && b[pos + dir * 8 - 1] != 0)
+                {
+                    if (getColor(b[pos + dir * 8 - 1]) != color)
+                        results.push_back({pos, pos + dir * 8 - 1});
+                }
+                if (x + 1 < 8 && b[pos + dir * 8 + 1] != 0)
+                {
+                    if (getColor(b[pos + dir * 8 + 1]) != color)
+                        results.push_back({pos, pos + dir * 8 + 1});
+                }
+                // en passant
+                if ((color == whiteID && y == 3) || (color == blackID && y == 4))
+                {
+                    if (canBeEnPassant(b, x + 1, y, b[65]))
+                        results.push_back({pos, pos + dir * 8 + 1});
+                    if (canBeEnPassant(b, x - 1, y, b[65]))
+                        results.push_back({pos, pos + dir * 8 - 1});
+                }
+            }
+            else if (y + dir == 0 || y + dir == 7) // last rank, promotion time
+            {
+                if (b[pos + dir * 8] == 0)
+                {
+                    results.push_back({pos, pos + 16 * dir}); // queen promotion, should be y=-1 or y=8
+                    results.push_back({pos, pos + 24 * dir}); // knight promotion
+                    results.push_back({pos, pos + 32 * dir}); // bishop
+                    results.push_back({pos, pos + 40 * dir}); // rook
+                }
+                if (x + 1 < 8 && b[(y + dir) * 8 + x + 1] != 0 && getColor(b[(y + dir) * 8 + x + 1]) != color)
+                {
+                    results.push_back({pos, pos + 1 + 16 * dir}); // queen promotion, should be y=-1 or y=8
+                    results.push_back({pos, pos + 1 + 24 * dir}); // knight promotion
+                    results.push_back({pos, pos + 1 + 32 * dir}); // bishop
+                    results.push_back({pos, pos + 1 + 40 * dir}); // rook
+                }
+                if (x - 1 >= 0 && b[(y + dir) * 8 + x - 1] != 0 && getColor(b[(y + dir) * 8 + x - 1]) != color)
+                {
+                    results.push_back({pos, pos - 1 + 16 * dir}); // queen promotion, should be y=-1 or y=8
+                    results.push_back({pos, pos - 1 + 24 * dir}); // knight promotion
+                    results.push_back({pos, pos - 1 + 32 * dir}); // bishop
+                    results.push_back({pos, pos - 1 + 40 * dir}); // rook
+                }
+            }
+            // int dir; // could probably make +-8
+            // if (color == whiteID) dir = -8;
+            // else dir = 8;
+            // if (pos + dir >= 8 && pos + dir < 56) // use 1 and 7 bc last rank promotes
+            // {
+            //     if (b[pos + dir] == 0)
+            //     {
+            //         results.push_back(pos + dir);
+            //         if ((color == whiteID && y == 6) || (color == blackID && y == 1))
+            //         {
+            //             if (b[pos + 2 * dir] == 0)
+            //                 results.push_back(pos + 2 * dir);
+            //         }
+            //     }
+            //     if (x - 1 >= 0 && b[pos + dir - 1] != 0)
+            //     {
+            //         if (getColor(b[pos + dir - 1]) != color)
+            //             results.push_back(pos + dir - 1);
+            //     }
+            //     if (x + 1 < 8 && b[pos + dir + 1] != 0)
+            //     {
+            //         if (getColor(b[pos + dir + 1]) != color)
+            //             results.push_back(pos + dir + 1);
+            //     }
+            //     // en passant
+            //     if ((color == whiteID && y == 3) || (color == blackID && y == 4))
+            //     {
+            //         if (canBeEnPassant(b, x + 1, y, b[65]))
+            //             results.push_back(pos + dir + 1);
+            //         if (canBeEnPassant(b, x - 1, y, b[65]))
+            //             results.push_back(pos + dir - 1);
+            //     }
+            // }
+            // else // if (y + dir == 0 || y + dir == 7) // last rank, promotion time
+            // {
+            //     if (b[pos + dir] == 0)
+            //     {
+            //         results.push_back(pos + 2 * dir); // queen promotion, should be y=-1 or y=8
+            //         results.push_back(pos + 3 * dir); // knight promotion
+            //         results.push_back(pos + 4 * dir); // bishop
+            //         results.push_back(pos + 5 * dir); // rook
+            //     }
+            //     if (x + 1 < 8 && b[pos + dir + 1] != 0 && getColor(b[pos + dir + 1]) != color)
+            //     {
+            //         results.push_back(pos + 1 + 2 * dir); // queen promotion, should be y=-1 or y=8
+            //         results.push_back(pos + 1 + 3 * dir); // knight promotion
+            //         results.push_back(pos + 1 + 4 * dir); // bishop
+            //         results.push_back(pos + 1 + 5 * dir); // rook
+            //     }
+            //     if (x - 1 >= 0 && b[pos + dir - 1] != 0 && getColor(b[pos + dir - 1]) != color)
+            //     {
+            //         results.push_back(pos - 1 + 2 * dir); // queen promotion, should be y=-1 or y=8
+            //         results.push_back(pos - 1 + 3 * dir); // knight promotion
+            //         results.push_back(pos - 1 + 4 * dir); // bishop
+            //         results.push_back(pos - 1 + 5 * dir); // rook
+            //     }
+            // }
+            break;
+        }
+        case knightID:
+        {
+            results.reserve(8); // max 8 knight moves
+            std::vector<int> moves = knightMoves[pos];
+            for (int offset : moves)
+            {
+                if ((b[pos + offset] == 0 || getColor(b[pos + offset]) != color))
+                    results.push_back({pos, pos + offset});
+                    // results.insert(results.end(), {{(pos + offset) % 8, (pos + offset) / 8}});
+            }
+
+            // this way is faster (2-3x), i think because it has only one insertion to results vs many push_backs
+            // however it seems a little slower when there are no moves (lots of erasing)
+            // int i = 0;
+            // while (i < moves.size())
+            // {
+            //     int offset = moves[i];
+            //     if (!(b[pos + offset] == 0 || getColor(b[pos + offset]) != color))
+            //     {
+            //         moves.erase(moves.begin() + i);
+            //         i--;
+            //     }
+            //     i++;
+            // }
+            // if (moves.size() != 0)
+            //     results.insert(results.end(), moves.begin(), moves.end());
+                // results = moves;
+            break;
+        }
+        case bishopID:
+        {
+            // int yInc, xInc, currX, currY;
+            // for (int i = 0; i < 4; i++)
+            // {
+            //     if (i < 2) yInc = -1;
+            //     else yInc = 1;
+            //     if (i % 2 == 0) // -,- and +,+
+            //         xInc = yInc;
+            //     else            // -,+ and +,-
+            //         xInc = -yInc;
+                
+            //     currX = x + xInc;
+            //     currY = y + yInc;
+
+            //     while (currY >= 0 && currY < 8 && currX >= 0 && currX < 8)
+            //     {
+            //         if (b[currY * 8 + currX] == 0 || getColor(b[currY * 8 + currX]) != color)
+            //             results.push_back({{currX, currY}});
+            //         if (b[currY * 8 + currX] != 0)
+            //             break;
+            //         currY += yInc;
+            //         currX += xInc;
+            //     }
+            // }
+
+            // new bishop stuff
+            std::array<int, 4> numMovesDiag = diagonalMoving[pos]; // negneg, posneg, pospos, negpos
+            results.reserve(14); // max 14 bishop moves
+            // std::vector<int> tmpResults;
+
+            // neg neg (inc is -9)
+            int loc = pos;
+            for(int i = 0; i < numMovesDiag[0]; i++)
+            {
+                loc -= 9;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+
+            // pos neg (inc is -7)
+            loc = pos;
+            for(int i = 0; i < numMovesDiag[1]; i++)
+            {
+                loc -= 7;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+
+            // pos pos (inc is 9)
+            loc = pos;
+            for(int i = 0; i < numMovesDiag[2]; i++)
+            {
+                loc += 9;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+
+            // neg pos (inc is 7)
+            loc = pos;
+            for(int i = 0; i < numMovesDiag[3]; i++)
+            {
+                loc += 7;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+            // results.insert(results.end(), tmpResults.begin(), tmpResults.end());
+            break;
+        }
+        case rookID:
+        {
+            // int inc, currY, currX;
+            // for (int i = 0; i < 4; i++)
+            // {
+            //     if (i < 2) inc = -1;
+            //     else inc = 1;
+
+            //     if (i % 2 == 0)
+            //     {
+            //         currY = y + inc;
+
+            //         while (currY >= 0 && currY < 8)
+            //         {
+            //             if (b[currY * 8 + x] == 0 || getColor(b[currY * 8 + x]) != color)
+            //                 results.push_back({{x, currY}});
+            //             if (b[currY * 8 + x] != 0)
+            //                 break;
+            //             currY += inc;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         currX = x + inc;
+
+            //         while (currX >= 0 && currX < 8)
+            //         {
+            //             if (b[y * 8 + currX] == 0 || getColor(b[y * 8 + currX]) != color)
+            //                 results.push_back({{currX, y}});
+            //             if (b[y * 8 + currX] != 0)
+            //                 break;
+            //             currX += inc;
+            //         }
+            //     }
+            // }
+
+            // std::array<int, 4> incs = {-1, -8, 1, 8};
+            results.reserve(15); // max 15 rook moves
+            int actualY = y * 8;
+            for (int i = x - 1; i >= 0; i--)
+            {
+                if (b[actualY + i] == 0 || getColor(b[actualY + i]) != color)
+                    results.push_back({pos, actualY + i});
+                if (b[actualY + i] != 0)
+                    break;
+            }
+            for (int i = x + 1; i < 8; i++)
+            {
+                if (b[actualY + i] == 0 || getColor(b[actualY + i]) != color)
+                    results.push_back({pos, actualY + i});
+                if (b[actualY + i] != 0)
+                    break;
+            }
+            for (int i = y - 1; i >= 0; i--)
+            {
+                if (b[i * 8 + x] == 0 || getColor(b[i * 8 + x]) != color)
+                    results.push_back({pos, i * 8 + x});
+                if (b[i * 8 + x] != 0)
+                    break;
+            }
+            for (int i = y + 1; i < 8; i++)
+            {
+                if (b[i * 8 + x] == 0 || getColor(b[i * 8 + x]) != color)
+                    results.push_back({pos, i * 8 + x});
+                if (b[i * 8 + x] != 0)
+                    break;
+            }
+            // std::array<std::vector<int>, 4> moves = rookMoves[pos];
+            // for (std::vector<int>& dir : moves)
+            // {
+            //     for (int& m : dir)
+            //     {
+            //         if (b[m] == 0 || getColor(b[m]) != color)
+            //             results.emplace_back(m);
+            //         if (b[m] != 0)
+            //             break;
+            //     }
+            // }
+            break;
+        }
+        case queenID:
+        {
+            results.reserve(29); // max 29 queen moves (15 rook + 14 bishop)
+            // bishop code:
+            // new bishop stuff
+            std::array<int, 4> numMovesDiag = diagonalMoving[pos]; // negneg, posneg, pospos, negpos
+
+            // neg neg (inc is -9)
+            int loc = pos;
+            for(int i = 0; i < numMovesDiag[0]; i++)
+            {
+                loc -= 9;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+
+            // pos neg (inc is -7)
+            loc = pos;
+            for(int i = 0; i < numMovesDiag[1]; i++)
+            {
+                loc -= 7;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+
+            // pos pos (inc is 9)
+            loc = pos;
+            for(int i = 0; i < numMovesDiag[2]; i++)
+            {
+                loc += 9;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+
+            // neg pos (inc is 7)
+            loc = pos;
+            for(int i = 0; i < numMovesDiag[3]; i++)
+            {
+                loc += 7;
+                if (b[loc] == 0 || getColor(b[loc]) != color)
+                    results.push_back({pos, loc});
+                if (b[loc] != 0)
+                    break;
+            }
+            // rook code:
+            int actualY = y * 8;
+            for (int i = x - 1; i >= 0; i--)
+            {
+                if (b[actualY + i] == 0 || getColor(b[actualY + i]) != color)
+                    results.push_back({pos, actualY + i});
+                if (b[actualY + i] != 0)
+                    break;
+            }
+            for (int i = x + 1; i < 8; i++)
+            {
+                if (b[actualY + i] == 0 || getColor(b[actualY + i]) != color)
+                    results.push_back({pos, actualY + i});
+                if (b[actualY + i] != 0)
+                    break;
+            }
+            for (int i = y - 1; i >= 0; i--)
+            {
+                if (b[i * 8 + x] == 0 || getColor(b[i * 8 + x]) != color)
+                    results.push_back({pos, i * 8 + x});
+                if (b[i * 8 + x] != 0)
+                    break;
+            }
+            for (int i = y + 1; i < 8; i++)
+            {
+                if (b[i * 8 + x] == 0 || getColor(b[i * 8 + x]) != color)
+                    results.push_back({pos, i * 8 + x});
+                if (b[i * 8 + x] != 0)
+                    break;
+            }
+            break;
+        }
+        case kingID:
+        {
+            results.reserve(10); // max 10 king moves
+            std::vector<int> moves = kingMoves[pos];
+            for (int offset : kingMoves[pos])
+            {   
+                if (b[pos + offset] == 0 || getColor(b[pos + offset]) != color)
+                    results.push_back({pos, pos + offset});
+            }
+            
+            // this is faster than the for loop (~2x)
+            // int i = 0;
+            // while (i < moves.size())
+            // {
+            //     int offset = moves[i];
+            //     if (!(b[pos + offset] == 0 || getColor(b[pos + offset]) != color))
+            //     {
+            //         moves.erase(moves.begin() + i);
+            //         i--;
+            //     }
+            //     i++;
+            // }
+            // if (moves.size() != 0)
+            //     results.insert(results.end(), moves.begin(), moves.end());
+
+            if (!isCheck(b, color) && x == 4)
+            {
+                std::array<int, 69> tmpBoard;
+                if (getID(b[pos + 3]) == rookID && getColor(b[pos + 3]) == color && b[pos + 1] == 0 && b[pos + 2] == 0)
+                {
+                    tmpBoard = b;
+                    movePiece(x, y, x + 1, y, tmpBoard); // check the in-between spot to ensure we're not castling thru check
+                    if (canCastle("k", color, b[64]) && !isCheck(tmpBoard, color))
+                        results.push_back({pos, pos + 2});
+                }
+                if (getID(b[pos - 4]) == rookID && getColor(b[pos - 4]) == color && b[pos - 1] == 0 && b[pos - 2] == 0 && b[pos - 3] == 0)
+                {
+                    tmpBoard = b;
+                    movePiece(x, y, x - 1, y, tmpBoard); // check the in-between spot to ensure we're not castling thru check
+                    if (canCastle("q", color, b[64]) && !isCheck(tmpBoard, color))
+                       results.push_back({pos, pos - 2});
+                }
+            }
+            break;
+        }
+        }
+
+        if (allMoves)
+            return results;
+
+        // remove moves resulting in check
+        std::vector<std::array<int, 2>> finalMoves;
+        finalMoves.reserve(results.size());
+        // std::vector<std::array<int, 2>> oppMoves = getAllMoves(b, !color, true, true);
+        for (std::array<int, 2> m : results)
+        {
+            std::array<int, 69> newBoard = b;
+            movePiece(m[0], m[1], newBoard);
+            if (!isCheck(newBoard, color))
+                finalMoves.push_back(m);
+        }
+        return finalMoves;
+    }
+    // static std::vector<std::array<int, 2>> getMoves(std::array<int, 69>& b, int x, int y, bool allMoves=false)
+    // {
+
+    // }
+
     /**
      * checks if a square can be captured by en passant
      * 
@@ -559,7 +1183,7 @@ public:
         if (x >= 0 && x < 8 && y >= 0 && y < 8)
         {
             if (getID(b[y * 8 + x]) == pawnID)
-                return targets & ((0b1 << 8) >> x);
+                return targets & ((0b1 << 7) >> x);
         }
         return false;
     }
@@ -570,13 +1194,19 @@ public:
      * @param color the side in question
      * @return true if in check, false otherwise
      */
-    static bool isCheck(std::array<int, 69>& b, int color)
+    __attribute__((hot)) static bool isCheck(std::array<int, 69>& b, int color)
     {
         int kingX = b[67 + color] >> 3;
         int kingY = b[67 + color] & 0b000111;
         int kingPos = kingY * 8 + kingX;
         int y, x;
         bool valid;
+        for (int offset : knightMoves[kingPos])
+        {
+            int p = b[kingPos + offset];
+            if (p != 0 && getColor(p) != color && getID(p) == knightID)
+                return true;
+        }
         // for (std::array<int, 2> sq : knightMoves)
         // {
         //     y = kingY + sq[1];
@@ -586,53 +1216,53 @@ public:
         //         return true;
         // }
         // the following code is about 2x as fast as the for loop????
-        y = kingY - 2;
-        x = kingX + 1;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY - 2;
+        // x = kingX + 1;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
         
-        y = kingY - 2;
-        x = kingX - 1;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY - 2;
+        // x = kingX - 1;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
         
-        y = kingY + 2;
-        x = kingX + 1;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY + 2;
+        // x = kingX + 1;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
         
-        y = kingY + 2;
-        x = kingX - 1;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY + 2;
+        // x = kingX - 1;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
 
-        y = kingY + 1;
-        x = kingX + 2;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY + 1;
+        // x = kingX + 2;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
         
-        y = kingY - 1;
-        x = kingX + 2;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY - 1;
+        // x = kingX + 2;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
         
-        y = kingY + 1;
-        x = kingX - 2;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY + 1;
+        // x = kingX - 2;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
 
-        y = kingY - 1;
-        x = kingX - 2;
-        valid = y >= 0 && y < 8 && x >= 0 && x < 8;
-        if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
-            return true;
+        // y = kingY - 1;
+        // x = kingX - 2;
+        // valid = y >= 0 && y < 8 && x >= 0 && x < 8;
+        // if (valid && getColor(b[y * 8 + x]) != color && getID(b[y * 8 + x]) == knightID)
+        //     return true;
 
         // new rook code
         int actualY = kingY * 8;
@@ -659,6 +1289,7 @@ public:
             if (b[i * 8 + kingX] != 0)
             {
                 if (getColor(b[i * 8 + kingX]) != color && (getID(b[i * 8 + kingX]) == rookID || getID(b[i * 8 + kingX]) == queenID))
+                // if (getColor(b[(i << 3) + kingX]) != color && (getID(b[(i << 3) + kingX]) == rookID || getID(b[(i << 3) + kingX]) == queenID))
                     return true;
                 break;
             }
@@ -668,6 +1299,7 @@ public:
             if (b[i * 8 + kingX] != 0)
             {
                 if (getColor(b[i * 8 + kingX]) != color && (getID(b[i * 8 + kingX]) == rookID || getID(b[i * 8 + kingX]) == queenID))
+                // if (getColor(b[(i << 3) + kingX]) != color && (getID(b[(i << 3) + kingX]) == rookID || getID(b[(i << 3 )+ kingX]) == queenID))
                     return true;
                 break;
             }
@@ -841,7 +1473,7 @@ public:
             {
                 if (abs(currY - destY) == 2)
                 {
-                        newEnPassant += ((0b1 << 8) >> destX);
+                    newEnPassant += ((0b1 << 7) >> destX);
                 }
                 if (abs(currX - destX) == 1) // it moved horizontally, either regular or en passant capture
                 {
@@ -961,15 +1593,17 @@ public:
     {
         int p = b[pos];
         int destX, destY;
-        if (dest > 0)
+        if (dest >= 0)
         {
             destY = dest / 8;
             destX = dest % 8;
         }
         else // white promotions, negative y which leads to negative dest
         {
-            destY = dest / 8 - 1;
-            destX = 8 - dest % 8;
+            // destY = dest / 8 - 1;
+            destY = (dest + 1) / 8 - 1;
+            // destX = 8 + dest % 8;
+            destX = (dest + 1) % 8 + 8 - 1;
         }
         int currX = pos % 8;
         int currY = pos / 8;
@@ -983,7 +1617,8 @@ public:
             {
                 if (abs(currY - destY) == 2)
                 {
-                        newEnPassant += ((0b1 << 8) >> destX);
+                    newEnPassant += ((0b1 << 7) >> destX);
+                    // if (indexToAlg(pos) == "d2") std::cout << destX << std::endl;
                 }
                 if (abs(currX - destX) == 1) // it moved horizontally, either regular or en passant capture
                 {
@@ -1000,50 +1635,44 @@ public:
                 {
                     b[0 * 8 + destX] = makePiece(destX, 0, color, queenID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else if (destY == 8) // queen promotion (black)
                 {
                     b[7 * 8 + destX] = makePiece(destX, 7, color, queenID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else if (destY == -2) // knight (white)
                 {
                     b[0 * 8 + destX] = makePiece(destX, 0, color, knightID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else if (destY == 9) // knight (black)
                 {
                     b[7 * 8 + destX] = makePiece(destX, 7, color, knightID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else if (destY == -3) // bishop (white)
                 {
                     b[0 * 8 + destX] = makePiece(destX, 0, color, bishopID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else if (destY == 10) // bishop (black)
                 {
                     b[7 * 8 + destX] = makePiece(destX, 7, color, bishopID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else if (destY == -4) // rook (white)
                 {
                     b[0 * 8 + destX] = makePiece(destX, 0, color, rookID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
                 else // rook (black)
                 {
                     b[7 * 8 + destX] = makePiece(destX, 7, color, rookID);
                     b[pos] = 0;
-                    return; // don't need to do anything else like en passant bc this can't be a double move
                 }
+                b[65] = 0; // get rid of any old en passants
+                return; // don't need to do anything else like en passant bc this can't be a double move
             }
             break;
         case kingID:
@@ -1078,16 +1707,16 @@ public:
         case rookID:
             if (color == whiteID)
             {
-                if (currX == 7) // king side
+                if (pos == 63) // king side
                     b[64] = b[64] & 0b1011;
-                else if (currX == 0) // queen side
+                else if (pos == 56) // queen side
                     b[64] = b[64] & 0b0111;
             }
             else
             {
-                if (currX == 7) // king side
+                if (pos == 7) // king side
                     b[64] = b[64] & 0b1110;
-                else if (currX == 0) // queen side
+                else if (pos == 0) // queen side
                     b[64] = b[64] & 0b1101;
             }
             break;
@@ -1128,7 +1757,10 @@ public:
     //     return false; 
     // }
     
-
+    /**
+     * @param fen a slightly modified fen string (omits last 2 nums), also 
+     *            doesn't require the rank of an en passant square
+     */
     static std::array<int, 69> FENtoBoard(std::string fen)
     {
         std::array<int, 69> board;
@@ -1149,6 +1781,7 @@ public:
         std::string castling = fen.substr(secondSpace + 1, thirdSpace - secondSpace); // KQkq means both can castle king and queen side
 
         std::string enPassant = fen.substr(thirdSpace + 1, fen.length()); // sqaure behind a pawn that just move 2 squares ex. "e6"
+        
         int boardIndex = 0;
         for (char c : boardStr)
         {
@@ -1284,6 +1917,42 @@ public:
         }
         diagonalMoving = tmp;
     }
+
+    static void initRook()
+    {
+        std::array<std::array<std::vector<int>, 4>, 64> tmp;
+        for (int i = 0; i < 64; i++)
+        {
+            int x = i % 8;
+            int y = i / 8;
+            std::array<std::vector<int>, 4> these_moves;
+            // up
+            std::vector<int> up;
+            for (int j = y - 1; j >= 0; j--)
+                up.push_back(j * 8 + x);
+            these_moves[0] = up;
+
+            // right
+            std::vector<int> right;
+            for (int j = x + 1; j < 8; j++)
+                right.push_back(y * 8 + j);
+            these_moves[1] = right;
+
+            // down
+            std::vector<int> down;
+            for (int j = y + 1; j < 8; j++)
+                down.push_back(j * 8 + x);
+            these_moves[2] = down;
+
+            // left
+            std::vector<int> left;
+            for (int j = x - 1; j >= 0; j--)
+                left.push_back(y * 8 + j);
+            these_moves[3] = left;
+            tmp[i] = these_moves;
+        }
+        rookMoves = tmp;
+    }
 };
 
 // all knight moves are {-15, -17, -6, 10, -10, 6, 15, 17}
@@ -1307,6 +1976,8 @@ const std::array<std::vector<int>, 64> Game::kingMoves = {{ {1, 8, 9}, {1, 8, 9,
 
 // const std::array<std::array<std::vector<int>, 4>, 64> Game::diagMoves = { {{}, {}, {9, 18, 27, 36, 45, 54, 63}, {}},  {{}, {}, {9, 18, 27, 36, 45, 54}, {7}}, {{}, {}, {9, 18, 27, 36, 45}, {7, 14}}, {{}, {}}}
 
+// std::array<std::array<std::vector<int>, 4>, 64> rookMoves = 
+
 // int main()
 // {
 //     // Game g;
@@ -1329,6 +2000,7 @@ const std::array<std::vector<int>, 64> Game::kingMoves = {{ {1, 8, 9}, {1, 8, 9,
 //     // std::cout << ms_double2.count() << " ms" << std::endl;
 //     // Game::FENtoBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
 //     Game::initDiag();
+//     Game::initRook();
 //     std::array<int, 69> board = Game::FENtoBoard("8/1K6/5B2/3R4/2N3P1/4Q3/8/k7 w - -");
 //     int pawnX = 6;
 //     int pawnY = 4;
@@ -1342,8 +2014,8 @@ const std::array<std::vector<int>, 64> Game::kingMoves = {{ {1, 8, 9}, {1, 8, 9,
 //     int kingY = 1;
 //     int queenX = 4;
 //     int queenY = 5;
-//     bool allmoves = true;
-//     int numTrials = 100000;
+//     bool allmoves = false;
+//     int numTrials = 1000000;
 //     // king perf test
 //     auto t1 = std::chrono::high_resolution_clock::now();
 //     for (int i = 0; i < numTrials; i++)
