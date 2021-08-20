@@ -3,12 +3,18 @@ import time
 #NOTE: chess ai needs to compiled in a particular way for this to work
 def perft_test(fen: str, max_depth: int, depth_results: list[int]):
     for i in range(max_depth):
-        proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/chessAiRewritev2", fen, str(i + 1)], stdout=subprocess.PIPE, text=True)
+        start = time.time()
+        # proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/chessAiRewritev2", fen, str(i + 1)], stdout=subprocess.PIPE, text=True)
+        proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/program", fen, str(i + 1)], stdout=subprocess.PIPE, text=True)
+        end = time.time()
+
         num = proc.stdout
         if int(num) == depth_results[i]:
-            print("Depth", i + 1, "passed (", int(num), ")")
+            print("Depth", i + 1, "passed (", int(num), ")", end="")
         else:
-            print("Depth", i + 1, "failed (", int(num), "vs expected", depth_results[i], ")")
+            print("Depth", i + 1, "failed (", int(num), "vs expected", depth_results[i], ")", end="")
+        
+        print("", end - start, 'seconds')
 
 def main():
     # from https://www.chessprogramming.org/Perft_Results

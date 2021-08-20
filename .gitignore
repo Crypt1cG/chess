@@ -3,5 +3,6 @@
 **/[Tt]est.*
 # some vim stuff i think?
 *.swp
+*.code-workspace
 *.txt
 bin/*

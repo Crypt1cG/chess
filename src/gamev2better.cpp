@@ -1978,103 +1978,103 @@ const std::array<std::vector<int>, 64> Game::kingMoves = {{ {1, 8, 9}, {1, 8, 9,
 
 // std::array<std::array<std::vector<int>, 4>, 64> rookMoves = 
 
-// int main()
-// {
-//     // Game g;
-//     // auto t1 = std::chrono::high_resolution_clock::now();    
-//     // for (int i = 0; i < 10000; i++)
-//     // {
-//     //     g.isCheck(g.board, Game::whiteID);
-//     // }
-//     // auto t2 = std::chrono::high_resolution_clock::now();
-//     // auto t3 = std::chrono::high_resolution_clock::now();    
-//     // for (int i = 0; i < 10000; i++)
-//     // {
-//     //     g.isCheckOld(g.board, Game::whiteID);
-//     // }
-//     // auto t4 = std::chrono::high_resolution_clock::now();
+int main()
+{
+    // Game g;
+    // auto t1 = std::chrono::high_resolution_clock::now();    
+    // for (int i = 0; i < 10000; i++)
+    // {
+    //     g.isCheck(g.board, Game::whiteID);
+    // }
+    // auto t2 = std::chrono::high_resolution_clock::now();
+    // auto t3 = std::chrono::high_resolution_clock::now();    
+    // for (int i = 0; i < 10000; i++)
+    // {
+    //     g.isCheckOld(g.board, Game::whiteID);
+    // }
+    // auto t4 = std::chrono::high_resolution_clock::now();
 
-//     // std::chrono::duration<double, std::milli> ms_double = t2 - t1;
-//     // std::cout << ms_double.count() << " ms" << std::endl;
-//     // std::chrono::duration<double, std::milli> ms_double2 = t4 - t3;
-//     // std::cout << ms_double2.count() << " ms" << std::endl;
-//     // Game::FENtoBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
-//     Game::initDiag();
-//     Game::initRook();
-//     std::array<int, 69> board = Game::FENtoBoard("8/1K6/5B2/3R4/2N3P1/4Q3/8/k7 w - -");
-//     int pawnX = 6;
-//     int pawnY = 4;
-//     int bishopX = 5;
-//     int bishopY = 2;
-//     int rookX = 3;
-//     int rookY = 3;
-//     int knightX = 2;
-//     int knightY = 4;
-//     int kingX = 1;
-//     int kingY = 1;
-//     int queenX = 4;
-//     int queenY = 5;
-//     bool allmoves = false;
-//     int numTrials = 1000000;
-//     // king perf test
-//     auto t1 = std::chrono::high_resolution_clock::now();
-//     for (int i = 0; i < numTrials; i++)
-//     {
-//         Game::getMoves(board, kingX, kingY, allmoves);
-//     }
-//     auto t2 = std::chrono::high_resolution_clock::now();
-//     std::chrono::duration<double, std::milli> time = t2 - t1;
-//     std::cout << "King: " << time.count() << std::endl;
+    // std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+    // std::cout << ms_double.count() << " ms" << std::endl;
+    // std::chrono::duration<double, std::milli> ms_double2 = t4 - t3;
+    // std::cout << ms_double2.count() << " ms" << std::endl;
+    // Game::FENtoBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
+    Game::initDiag();
+    Game::initRook();
+    std::array<int, 69> board = Game::FENtoBoard("8/1K6/5B2/3R4/2N3P1/4Q3/8/k7 w - -");
+    int pawnX = 6;
+    int pawnY = 4;
+    int bishopX = 5;
+    int bishopY = 2;
+    int rookX = 3;
+    int rookY = 3;
+    int knightX = 2;
+    int knightY = 4;
+    int kingX = 1;
+    int kingY = 1;
+    int queenX = 4;
+    int queenY = 5;
+    bool allmoves = false;
+    int numTrials = 1000000;
+    // king perf test
+    auto t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numTrials; i++)
+    {
+        Game::getMoves(board, kingX, kingY, allmoves);
+    }
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> time = t2 - t1;
+    std::cout << "King: " << time.count() << std::endl;
 
-//     // pawn perf test
-//     t1 = std::chrono::high_resolution_clock::now();
-//     for (int i = 0; i < numTrials; i++)
-//     {
-//         Game::getMoves(board, pawnX, pawnY, allmoves);
-//     }
-//     t2 = std::chrono::high_resolution_clock::now();
-//     time = t2 - t1;
-//     std::cout << "Pawn: " << time.count() << std::endl;
+    // pawn perf test
+    t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numTrials; i++)
+    {
+        Game::getMoves(board, pawnX, pawnY, allmoves);
+    }
+    t2 = std::chrono::high_resolution_clock::now();
+    time = t2 - t1;
+    std::cout << "Pawn: " << time.count() << std::endl;
 
-//     // bishop perf test
-//     t1 = std::chrono::high_resolution_clock::now();
-//     for (int i = 0; i < numTrials; i++)
-//     {
-//         Game::getMoves(board, bishopX, bishopY, allmoves);
-//     }
-//     t2 = std::chrono::high_resolution_clock::now();
-//     time = t2 - t1;
-//     std::cout << "Bishop: " << time.count() << std::endl;
+    // bishop perf test
+    t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numTrials; i++)
+    {
+        Game::getMoves(board, bishopX, bishopY, allmoves);
+    }
+    t2 = std::chrono::high_resolution_clock::now();
+    time = t2 - t1;
+    std::cout << "Bishop: " << time.count() << std::endl;
 
-//     // rook perf test
-//     t1 = std::chrono::high_resolution_clock::now();
-//     for (int i = 0; i < numTrials; i++)
-//     {
-//         Game::getMoves(board, rookX, rookY, allmoves);
-//     }
-//     t2 = std::chrono::high_resolution_clock::now();
-//     time = t2 - t1;
-//     std::cout << "Rook: " << time.count() << std::endl;
+    // rook perf test
+    t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numTrials; i++)
+    {
+        Game::getMoves(board, rookX, rookY, allmoves);
+    }
+    t2 = std::chrono::high_resolution_clock::now();
+    time = t2 - t1;
+    std::cout << "Rook: " << time.count() << std::endl;
 
-//     // knight perf test
-//     t1 = std::chrono::high_resolution_clock::now();
-//     for (int i = 0; i < numTrials; i++)
-//     {
-//         Game::getMoves(board, knightX, knightY, allmoves);
-//     }
-//     t2 = std::chrono::high_resolution_clock::now();
-//     time = t2 - t1;
-//     std::cout << "Knight: " << time.count() << std::endl;
+    // knight perf test
+    t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numTrials; i++)
+    {
+        Game::getMoves(board, knightX, knightY, allmoves);
+    }
+    t2 = std::chrono::high_resolution_clock::now();
+    time = t2 - t1;
+    std::cout << "Knight: " << time.count() << std::endl;
 
-//     // queen perf test
-//     t1 = std::chrono::high_resolution_clock::now();
-//     for (int i = 0; i < numTrials; i++)
-//     {
-//         Game::getMoves(board, queenX, queenY, allmoves);
-//     }
-//     t2 = std::chrono::high_resolution_clock::now();
-//     time = t2 - t1;
-//     std::cout << "Queen: " << time.count() << std::endl;
+    // queen perf test
+    t1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numTrials; i++)
+    {
+        Game::getMoves(board, queenX, queenY, allmoves);
+    }
+    t2 = std::chrono::high_resolution_clock::now();
+    time = t2 - t1;
+    std::cout << "Queen: " << time.count() << std::endl;
 
-//     std::cout << "done" << std::endl;
-// }
+    std::cout << "done" << std::endl;
+}

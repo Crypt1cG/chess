@@ -8,7 +8,9 @@
 			// "command": "/bin/g++",
 			"args": [
 				"-g",
-				"${file}",
+				// "${file}",
+				"${workspaceFolder}/src/board.cpp",
+				"${workspaceFolder}/src/chessAi.cpp",
 
 				// optimizations
 				"-Ofast",
@@ -35,7 +37,8 @@
 				"-pthread",
 
 				"-o",
-				"${workspaceFolder}/bin/${fileBasenameNoExtension}"
+				// "${workspaceFolder}/bin/${fileBasenameNoExtension}"
+				"${workspaceFolder}/bin/program"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
