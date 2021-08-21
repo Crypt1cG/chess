@@ -16,6 +16,7 @@
 				"-Ofast",
 				// "-O2",
 				"-funroll-loops",
+				"-march=native",
 
 				// from wx-config-gtk3 --libs
 				"-pthread",
