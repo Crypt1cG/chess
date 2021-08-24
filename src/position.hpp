@@ -1,4 +1,6 @@
 #include <string>
+#include <bitset>
+#include <iostream>
 #pragma once
 
 typedef unsigned long long U64;
@@ -10,23 +12,30 @@ typedef unsigned long long U64;
  */
 class Position
 {
+public:
     // use __builtin_popcountll() to count num of 1s in a bitboard
+    static const int whiteID = 0;
+    static const int blackID = 1;
 
-    U64 whitePieces; // contains all white pieces
-    U64 blackPieces; // contains all black pieces
-    U64 occupency; // contains all pieces
-    U64 whitePawns;
-    U64 blackPawns;
-    U64 whiteKnights;
-    U64 blackKnights;
-    U64 whiteBishops;
-    U64 blackBishops;
-    U64 whiteRooks;
-    U64 blackRooks;
-    U64 whiteQueens;
-    U64 blackQueens;
-    U64 whiteKing;
-    U64 blackKing;
+    // for all of the following, the least significant bit is index 0
+    U64 whitePieces = 0; // contains all white pieces
+    U64 blackPieces = 0; // contains all black pieces
+    U64 occupency = 0; // contains all pieces
+    U64 whitePawns = 0;
+    U64 blackPawns = 0;
+    U64 whiteKnights = 0;
+    U64 blackKnights = 0;
+    U64 whiteBishops = 0;
+    U64 blackBishops = 0;
+    U64 whiteRooks = 0;
+    U64 blackRooks = 0;
+    U64 whiteQueens = 0;
+    U64 blackQueens = 0;
+    U64 whiteKing = 0;
+    U64 blackKing = 0;
+    int enPassant = 0;
+    int castling = 0; // 0bKQkq
+    int currTurn = 0;
 
     /**
      * Constructor - creates a position from a given fen string
@@ -35,10 +44,15 @@ class Position
      */
     Position(std::string fen);
 
+    bool canCastle(int color, char side);
+
     /**
      * Default constructor - uses the starting position fen to make a position object
      */
     Position();
 
-    
+    /**
+     * prints the current position
+     */
+    void print();
 };

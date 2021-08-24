@@ -9,14 +9,15 @@
 			"args": [
 				"-g",
 				// "${file}",
-				"${workspaceFolder}/src/board.cpp",
-				"${workspaceFolder}/src/chessAi.cpp",
+				// "${workspaceFolder}/src/board.cpp",
+				// "${workspaceFolder}/src/chessAi.cpp",
+				"${workspaceFolder}/src/*.cpp",
 
 				// optimizations
-				"-Ofast",
+				// "-Ofast",
 				// "-O2",
-				"-funroll-loops",
-				"-march=native",
+				// "-funroll-loops",
+				// "-march=native",
 
 				// from wx-config-gtk3 --libs
 				"-pthread",
@@ -38,8 +39,8 @@
 				"-pthread",
 
 				"-o",
-				// "${workspaceFolder}/bin/${fileBasenameNoExtension}"
-				"${workspaceFolder}/bin/program"
+				"${workspaceFolder}/bin/${fileBasenameNoExtension}"
+				// "${workspaceFolder}/bin/program"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
