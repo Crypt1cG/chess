@@ -8,35 +8,46 @@
 			// "command": "/bin/g++",
 			"args": [
 				"-g",
+				// "-pg",
 				// "${file}",
 				// "${workspaceFolder}/src/board.cpp",
 				// "${workspaceFolder}/src/chessAi.cpp",
 				"${workspaceFolder}/src/*.cpp",
 
-				// optimizations
-				// "-Ofast",
-				// "-O2",
-				// "-funroll-loops",
-				// "-march=native",
+				// "-fprofile-generate", // this generates profile stuff (makes code faster when using next options)
+				// "-fprofile-use", // after generating profile stuff, this made about 20% faster
 
-				// from wx-config-gtk3 --libs
-				"-pthread",
-				"-lwx_gtk3u_xrc-3.0",
-				"-lwx_gtk3u_webview-3.0",
-				"-lwx_gtk3u_html-3.0",
-				"-lwx_gtk3u_qa-3.0",
-				"-lwx_gtk3u_adv-3.0",
-				"-lwx_gtk3u_core-3.0",
-				"-lwx_baseu_xml-3.0",
-				"-lwx_baseu_net-3.0",
-				"-lwx_baseu-3.0",
-				// from wx-config-gtk3 --cxxflags
-				"-I/usr/lib/wx/include/gtk3-unicode-3.0",
-				"-I/usr/include/wx-3.0",
-				"-D_FILE_OFFSET_BITS=64",
-				"-DWXUSINGDLL",
-				"-D__WXGTK__",
-				"-pthread",
+				"-Wall",
+				"-Wextra",
+				"-Wshadow",
+
+				// optimizations
+				"-Ofast", // definetly does a lot of good (almost an order of magnitude)
+				// "-O2",
+				// "-funroll-loops", // maybe this is actually bad
+				"-march=native", // seems to help a decent amount
+				// "-fno-exceptions",
+				// "-g",
+				// "-Wa,-alh",
+
+				// // from wx-config-gtk3 --libs
+				// "-pthread",
+				// "-lwx_gtk3u_xrc-3.0",
+				// "-lwx_gtk3u_webview-3.0",
+				// "-lwx_gtk3u_html-3.0",
+				// "-lwx_gtk3u_qa-3.0",
+				// "-lwx_gtk3u_adv-3.0",
+				// "-lwx_gtk3u_core-3.0",
+				// "-lwx_baseu_xml-3.0",
+				// "-lwx_baseu_net-3.0",
+				// "-lwx_baseu-3.0",
+				// // from wx-config-gtk3 --cxxflags
+				// "-I/usr/lib/wx/include/gtk3-unicode-3.0",
+				// "-I/usr/include/wx-3.0",
+				// "-D_FILE_OFFSET_BITS=64",
+				// "-DWXUSINGDLL",
+				// "-D__WXGTK__",
+				// "-pthread",
 
 				"-o",
 				"${workspaceFolder}/bin/${fileBasenameNoExtension}"

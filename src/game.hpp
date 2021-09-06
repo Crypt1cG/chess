@@ -19,6 +19,7 @@ public:
     Game(std::string fen);
 
     std::vector<Move> getAllMoves(int color, bool pseudoLegal=false);
+    std::vector<Move> getAllCaptureMoves(int color, bool pseudoLegal=false);
 
     std::vector<Move> getAllKingMoves(int color);
 
@@ -33,7 +34,7 @@ public:
 
     std::vector<Move> getAllKnightMoves(int color);
     // should really re name this bc it's used for king as well
-    std::vector<Move> knightAttacksToMoves(U64 attacks, int pos);
+    std::vector<Move> knightAttacksToMoves(U64 attacks, int pos, int piece);
 
     /* pawn stuff */
 
@@ -60,11 +61,16 @@ public:
 
 
     bool isCheck(int color);
+    bool RQBCheck(int color);
+    bool moveCausesCheck(Move& m, int color);
     void movePiece(Move move);
+    void movePieceNoBranching(Move move);
     /**
      * unsets a given position in all bitboards
      * 
      * @param pos the position to be cleared
      */
     void clearSquare(int pos);
+
+    static std::string indexToAlg(int index);
 };

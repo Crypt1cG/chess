@@ -5,7 +5,7 @@ def perft_test(fen: str, max_depth: int, depth_results: list[int]):
     for i in range(max_depth):
         start = time.time()
         # proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/chessAiRewritev2", fen, str(i + 1)], stdout=subprocess.PIPE, text=True)
-        proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/program", fen, str(i + 1)], stdout=subprocess.PIPE, text=True)
+        proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/ai", fen, str(i + 1)], stdout=subprocess.PIPE, text=True)
         end = time.time()
 
         num = proc.stdout

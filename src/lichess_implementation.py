@@ -12,7 +12,7 @@ client: berserk.Client
 board = []
 TOKEN = "API_TOKEN"
 ID: str
-COLOR = 'black'
+COLOR = 'white'
 LEVEL = 6
 
 
@@ -33,6 +33,7 @@ def make_move_lichess(start: int, end: int):
             done = True
         except berserk.exceptions.ApiError:
             print('got that weird error again')
+            print(move_str)
 
 def make_move_board(b: list[str], start: int, dest: int):
     p: str
@@ -45,50 +46,59 @@ def make_move_board(b: list[str], start: int, dest: int):
         dest_y = dest // 8
 
     x = start % 8
-    y = start / 8
+    y = start // 8
 
     new_en_passant = 0
 
     if p.lower() == 'p':
         if dest_y >= 1 and dest_y < 7: # non promotion moves
             if abs(y - dest_y) == 2: # double move, need to update en passant
-                new_en_passant = (0b1 << 8) >> dest_x
+                # print("ENPAS TSANT")
+                new_en_passant = dest + (-8 * (dest_y - y > 0)) + (8 * (dest_y - y < 0))
             if abs(x - dest_x) == 1: # capture (either en passant or regular)
                 if b[dest] == ' ': # moving to an empty square (en passant)
-                    b[y * 8 + x] = ' ' # the pawn en passant-ed
+                    b[y * 8 + dest_x] = ' ' # the pawn en passant-ed
 
         else: # promotion stuff
             if dest_y == -1: # queen promotion (white)
                 b[0 * 8 + dest_x] = 'Q'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             elif dest_y == 8: # queen promotion (black)
                 b[7 * 8 + dest_x] = 'q'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             elif dest_y == -2: # knight (white)
                 b[0 * 8 + dest_x] = 'N'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             elif dest_y == 9: # knight (black)
                 b[7 * 8 + dest_x] = 'n'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             elif dest_y == -3: # bishop (white)
                 b[0 * 8 + dest_x] = 'B'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             elif dest_y == 10: # bishop (black)
                 b[7 * 8 + dest_x] = 'b'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             elif dest_y == -4: # rook (white)
                 b[0 * 8 + dest_x] = 'R'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
             else: # rook (black)
                 b[7 * 8 + dest_x] = 'r'
                 b[start] = ' '
+                b[66] = not b[66]
                 return # don't need to do anything else like en passant bc this can't be a double move
 
     elif p.lower() == 'k':
@@ -165,7 +175,7 @@ def alg_to_index(pos: str) -> int:
     x = ord(x) - ord('a')
     y = 8 - int(y)
     if len(pos) == 3: # promotion
-        if y == 8: # white promoting
+        if y == 0: # white promoting
             if pos[2] == "q":
                 y = -1
             elif pos[2] == "n":
@@ -237,7 +247,7 @@ def game_loop():
 
                     fen_str = board_to_FEN(board)
                     print(fen_str)
-                    proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/chessAiRewritev2", fen_str], stdout=subprocess.PIPE, text=True)
+                    proc = subprocess.run(["/home/cryptic/Coding/wxChess/bin/ai", fen_str], stdout=subprocess.PIPE, text=True)
                     move = proc.stdout.split(" ")
                     start = int(move[0])
                     end = int(move[1])
@@ -295,22 +305,11 @@ def board_to_FEN(b: list[str]) -> str:
     result += ' '
     if b[65] != 0:
         en_passant = b[65]
-        if en_passant & 0b10000000: # a file
-            result += 'a0'
-        elif en_passant & 0b01000000: # b file
-            result += 'b0'
-        elif en_passant & 0b00100000: # c file
-            result += 'c0'
-        elif en_passant & 0b00010000: # d file
-            result += 'd0'
-        elif en_passant & 0b00001000: # e file
-            result += 'e0'
-        elif en_passant & 0b00000100: # f file
-            result += 'f0'
-        elif en_passant & 0b00000010: # g file
-            result += 'g0'
-        elif en_passant & 0b00000001: # h file
-            result += 'h0'
+        x = en_passant % 8
+        y = en_passant // 8
+        en_passant_str = chr(ord('a') + x)
+        en_passant_str += str(8 - y)
+        result += en_passant_str
     else:
         result += '-'
 
@@ -406,14 +405,29 @@ def main():
              'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
              'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R',
              0b1111,  # castling wwbb qkqk
-             0b0,  # en passant
+             0,  # en passant - index of square behind a pawn that made a double move
              0b0]  # curr turn 0 = w 1 = b
     # print(board_to_FEN(board))
+
+    #######################
+    # CODE TO PLAY A GAME #
+    #######################
+    
     session = berserk.TokenSession(TOKEN)
     client = berserk.Client(session=session)
     start_game_ai(LEVEL, COLOR)
     input("waiting")
     game_loop()
+
+    ###########################
+    # END IMPORTANT GAME CODE #
+    ###########################
+
+    # move = 'g7g8n'
+    # start = move[:2]
+    # end = move[2:]
+    # print(alg_to_index(start))
+    # print(alg_to_index(end))
     # make_move_board(board, 10, 18)
     # print(board)
     # move = subprocess.run(["/home/cryptic/Coding/wxChess/bin/chessAiRewritev2", "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -"], stdout=subprocess.PIPE, text=True)

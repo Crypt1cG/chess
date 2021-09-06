@@ -11,7 +11,7 @@ Position::Position(std::string fen)
     std::string boardStr = fen.substr(0, firstSpace);
     std::string toMove = fen.substr(firstSpace + 1, 1); // "w" or "b"
     std::string castlingStr = fen.substr(secondSpace + 1, thirdSpace - secondSpace); // KQkq means both can castle king and queen side
-    std::string enPassant = fen.substr(thirdSpace + 1); // the rest of the string
+    std::string enPassantStr = fen.substr(thirdSpace + 1); // the rest of the string
 
     int index = 0;
     for (char c : boardStr)
@@ -70,18 +70,26 @@ Position::Position(std::string fen)
     }
     castling = castlingNum;
 
-    if (enPassant != "-")
+    if (enPassantStr != "-")
     {
-        char file = enPassant.at(0);
-        if (file == 'a') enPassant = 0b10000000;
-        else if (file == 'b') enPassant = 0b01000000;
-        else if (file == 'c') enPassant = 0b00100000;
-        else if (file == 'd') enPassant = 0b00010000;
-        else if (file == 'e') enPassant = 0b00001000;
-        else if (file == 'f') enPassant = 0b00000100;
-        else if (file == 'g') enPassant = 0b00000010;
-        else if (file == 'h') enPassant = 0b00000001;
+        int x, y;
+        char file = enPassantStr.at(0);
+        if (file == 'a') x = 0;
+        else if (file == 'b') x = 1;
+        else if (file == 'c') x = 2;
+        else if (file == 'd') x = 3;
+        else if (file == 'e') x = 4;
+        else if (file == 'f') x = 5;
+        else if (file == 'g') x = 6;
+        else if (file == 'h') x = 7;
+
+        y = 8 - std::stoi(enPassantStr.substr(1, 1));
+        this->enPassant = 1ull << (y * 8 + x);
     }
+
+    bitboards = {&whitePawns, &whiteKnights, &whiteBishops, &whiteRooks, &whiteQueens, &whiteKing,
+                 &blackPawns, &blackKnights, &blackBishops, &blackRooks, &blackQueens, &blackKing,
+                 &whitePieces, &blackPieces, &occupency};
 }
 
 Position::Position() : Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -") {};
@@ -121,7 +129,7 @@ void Position::print()
             piece += " | ";
             std::cout << piece;
         }
-        std::cout << i + 1 << "\n" << sep << std::endl;
+        std::cout << 8 - i << "\n" << sep << std::endl;
     }
     std::cout << "  a   b   c   d   e   f   g   h" << std::endl;
 }

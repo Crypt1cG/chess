@@ -5,4 +5,8 @@
 *.swp
 *.code-workspace
 *.txt
+*.o
+*.out
+# callgrind stuff
+*.out.*
 bin/*
