@@ -140,6 +140,16 @@ bool Position::canCastle(int color, char side)
     if (side == 'q') mask >>= 1;
     return castling & mask;
 }
+
+int Position::at(int pos)
+{
+    U64 piece = 1ull << pos;
+    if (piece & (whitePawns | blackPawns)) return pawnIndex;
+    if (piece & (whiteKnights | blackKnights)) return knightIndex;
+    if (piece & (whiteBishops | blackBishops)) return bishopIndex;
+    if (piece & (whiteRooks | blackRooks)) return rookIndex;
+    if (piece & (whiteQueens | blackQueens)) return queenIndex;
+}
 // int main()
 // {
 //     Position p = Position("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -");

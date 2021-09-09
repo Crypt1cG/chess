@@ -54,6 +54,7 @@ public:
     Position(std::string fen);
 
     bool canCastle(int color, char side);
+    int at(int pos);
 
     /**
      * Default constructor - uses the starting position fen to make a position object

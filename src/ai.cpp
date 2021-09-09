@@ -85,25 +85,197 @@ U64 Ai::countPositions(int color, int depth)
     return numPositions;
 }
 
+/**
+ * this is probably terrible btw
+ */
+int Ai::quiescenceSearch(int alpha, int beta, int color)
+{
+    std::vector<Move> allMoves = game.getAllCaptureMoves(color);
+    int eval = evaluate(game.position);
+    if (allMoves.size() == 0) return evaluate(game.position);
+    Position original = game.position;
+
+    if (color == Position::whiteID)
+    {
+        // not entirely sure what these two lines do conceptually, but they are critical
+        if (eval >= beta) return beta;
+        
+        // https://www.chessprogramming.org/Delta_Pruning
+        int BIG_DELTA = 900 + 100; // max possible (if we got a hanging queen) (and some padding)
+        
+        if (eval + BIG_DELTA < alpha) // even would the best possible move, we would still have a better option
+            return alpha;
+
+        if (eval > alpha) alpha = eval;
+
+        if (game.isCheck(color))
+        {
+            for (Move& m : allMoves)
+            {
+                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+                int capPieceIndex = game.position.at(m.to);
+                int maxVal;
+                if (capPieceIndex == Position::pawnIndex)
+                    maxVal = 300; // pawn is 100, 200 safety margin
+                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+                    maxVal = 500; // bishop/knight are 300, 200 safety margin
+                else if (capPieceIndex == Position::rookIndex)
+                    maxVal = 700; // rook is 500, 200 safety margin
+                else maxVal = 1100; // queen is 900, 200 safety margin
+                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+                if (eval + maxVal < alpha) 
+                    return alpha;
+
+                game.movePiece(m);
+                if (!game.isCheck(color))
+                {
+                    int val = quiescenceSearch(alpha, beta, !color);
+                    if (val >= beta) return beta;
+                    if (val > alpha) alpha = val;
+                }
+                game.position = original;
+            }
+        }
+        else
+        {
+            for (Move& m : allMoves)
+            {
+                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+                int capPieceIndex = game.position.at(m.to);
+                int maxVal;
+                if (capPieceIndex == Position::pawnIndex)
+                    maxVal = 300; // pawn is 100, 200 safety margin
+                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+                    maxVal = 500; // bishop/knight are 300, 200 safety margin
+                else if (capPieceIndex == Position::rookIndex)
+                    maxVal = 700; // rook is 500, 200 safety margin
+                else maxVal = 1100; // queen is 900, 200 safety margin
+                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+                if (eval + maxVal < alpha) 
+                    return alpha;
+
+                if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
+                {
+                    int val = quiescenceSearch(alpha, beta, !color);
+                    if (val >= beta) return beta;
+                    if (val > alpha) alpha = val;
+                }
+                game.position = original;
+            }
+        }
+        return alpha;
+    }
+    else
+    {
+        // not entirely sure what these two lines do conceptually, but they are critical
+        if (eval <= alpha) return alpha;
+
+        // https://www.chessprogramming.org/Delta_Pruning
+        int BIG_DELTA = -900 - 100; // max possible (if we got a hanging queen) (and some padding)
+        
+        if (eval + BIG_DELTA > beta) // even would the best possible move, we would still have a better option
+            return beta;
+
+        if (eval < beta) beta = eval;
+
+        if (game.isCheck(color))
+        {
+            for (Move& m : allMoves)
+            {
+                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+                int capPieceIndex = game.position.at(m.to);
+                int maxVal;
+                if (capPieceIndex == Position::pawnIndex)
+                    maxVal = -300; // pawn is 100, 200 safety margin
+                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+                    maxVal = -500; // bishop/knight are 300, 200 safety margin
+                else if (capPieceIndex == Position::rookIndex)
+                    maxVal = -700; // rook is 500, 200 safety margin
+                else maxVal = -1100; // queen is 900, 200 safety margin
+                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+                if (eval + maxVal > beta) 
+                    return beta;
+
+                game.movePiece(m);
+                if (!game.isCheck(color))
+                {
+                    int val = quiescenceSearch(alpha, beta, !color);
+                    if (val <= alpha) return alpha;
+                    if (val < beta) beta = val;
+                }
+                game.position = original;
+            }
+        }
+        else
+        {
+            for (Move& m : allMoves)
+            {
+                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+                int capPieceIndex = game.position.at(m.to);
+                int maxVal;
+                if (capPieceIndex == Position::pawnIndex)
+                    maxVal = -300; // pawn is 100, 200 safety margin
+                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+                    maxVal = -500; // bishop/knight are 300, 200 safety margin
+                else if (capPieceIndex == Position::rookIndex)
+                    maxVal = -700; // rook is 500, 200 safety margin
+                else maxVal = -1100; // queen is 900, 200 safety margin
+                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+                if (eval + maxVal > beta) 
+                    return beta;
+
+                if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
+                {
+                    int val = quiescenceSearch(alpha, beta, !color);
+                    if (val <= alpha) return alpha;
+                    if (val < beta) beta = val;
+                }
+                game.position = original;
+            }
+        }
+        return beta;
+    }
+}
+
+int Ai::staticExchangeEval(int square, int color)
+{
+    // https://www.chessprogramming.org/Static_Exchange_Evaluation
+    std::vector<Move> thisColorCaptures = game.getAllCaptureMoves(color, true);
+    std::vector<Move> captures;
+    std::vector<Move> allOpCaptures = game.getAllCaptureMoves(!color, true);
+    std::vector<Move> opCaptures;
+    int value = 0;
+
+    for (Move& m : thisColorCaptures)
+    {
+        if (m.to == square) captures.push_back(m);
+    }
+    for (Move& m : allOpCaptures)
+    {
+        if (m.to == square) opCaptures.push_back(m);
+    }
+    if (captures.size() != 0)
+    {
+
+    }
+    return value;
+}
+
 int Ai::alphaBeta(int depth, int alpha, int beta, int color)
 {
     //? is this a problem - let's say, hypothetically, that it is checkmate, but the depth is 0.
     //? this will still return the static evaluation even though it should return +-infinity
     //? is this true????
-    if (depth == 0) return evaluate(game.position);
+
+    //? should we check if it's mate/stalemate before this?
+    if (depth == 0) return quiescenceSearch(alpha, beta, color);
+    // if (depth == 0) return evaluate(game.position);
 
     std::vector<Move> allMoves = game.getAllMoves(color, true);
     Position original = game.position;
 
     if (color == Position::whiteID) // maximising player
     {
-        if (allMoves.size() == 0) // checkmate or stalemate
-        {
-            if (game.isCheck(color)) // checkmate
-                return INT32_MIN + (DEPTH - depth); // really bad to be checkmated
-            return 0; // stalemate is equal
-        }
-
         // for (Move& move : allMoves)
         // {
         //     game.movePiece(move);
@@ -115,6 +287,7 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
         //                                   // so we can ignore other moves from this position
         //     if (val > alpha) alpha = val;
         // }
+        bool canMove = false; // used to check for checkmate or stalemate
         if (game.isCheck(color))
         {
             for (Move& m : allMoves)
@@ -122,6 +295,7 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
                 game.movePiece(m);
                 if (!game.isCheck(color))
                 {
+                    canMove = true;
                     int val = alphaBeta(depth - 1, alpha, beta, !color);
                     if (val >= beta) return beta; // sort of like if this score is too good to be true, 
                                                 // black will never allow this position to be reached,
@@ -137,6 +311,7 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
             {
                 if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
                 {
+                    canMove = true;
                     int val = alphaBeta(depth - 1, alpha, beta, !color);
                     if (val >= beta) return beta; // sort of like if this score is too good to be true, 
                                                 // black will never allow this position to be reached,
@@ -146,17 +321,16 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
                 game.position = original;
             }
         }
+        if (!canMove) // checkmate or stalemate
+        {
+            if (game.isCheck(color)) // checkmate
+                return INT32_MIN + (DEPTH - depth + 1); // really bad to be checkmated
+            return 0; // stalemate is equal
+        }
         return alpha;
     }
     else
     {
-        if (allMoves.size() == 0)
-        {
-            if (game.isCheck(color))
-                return INT32_MAX - (DEPTH - depth); // really bad (good for white) to be checkmated
-            return 0;
-        }
-
         // for (Move& move : allMoves)
         // {
         //     game.movePiece(move);
@@ -167,6 +341,7 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
         //     if (val < beta)
         //         beta = val;
         // }
+        bool canMove = false; // used for checkMate
         if (game.isCheck(color))
         {
             for (Move& m : allMoves)
@@ -174,6 +349,7 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
                 game.movePiece(m);
                 if (!game.isCheck(color))
                 {
+                    canMove = true;
                     int val = alphaBeta(depth - 1, alpha, beta, !color);
                     if (val <= alpha) return alpha;
                     if (val < beta) beta = val;
@@ -187,12 +363,19 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
             {
                 if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
                 {
+                    canMove = true;
                     int val = alphaBeta(depth - 1, alpha, beta, !color);
                     if (val <= alpha) return alpha;
                     if (val < beta) beta = val;
                 }
                 game.position = original;
             }
+        }
+        if (!canMove)
+        {
+            if (game.isCheck(color))
+                return INT32_MAX - (DEPTH - depth + 1); // really bad (good for white) to be checkmated
+            return 0;
         }
         return beta;
     }
@@ -298,6 +481,7 @@ void Ai::makeBestMoveAB(int color)
                 if (!game.moveCausesCheck(move, color)) // moveCausesCheck makes the move
                 {
                     int score = alphaBeta(depth - 1, alpha, beta, !color);
+                    std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
                     //? i dont think we need the other alpha beta code............
                     if (score < bestScore)
                     {
@@ -317,6 +501,7 @@ void Ai::makeBestMoveAB(int color)
 
 int Ai::evaluate(Position p)
 {
+    p.print();
     int whiteScore = 0;
     int blackScore = 0;
 
@@ -450,7 +635,17 @@ int main(int argc, char *argv[])
 
     /* PERFT TESTS */
     // Ai ai = Ai(fen);
-    Ai ai = Ai("1r1q1rk1/1bp1bpp1/p3p2p/N1pnB3/8/1P1P1N2/P1PQ1PPP/R3R1K1 w - -");
+    Ai ai = Ai("r1bqkbnr/pp1n2pp/2p2p2/3Np1B1/3pP3/3P1N2/PPP2PPP/R2QKB1R w KQkq -");
+    std::cout << ai.quiescenceSearch(INT32_MIN, INT32_MAX, Position::whiteID) << std::endl;
+    // std::vector<Move> captures = ai.game.getAllCaptureMoves(Position::whiteID);
+    // for (Move& m : captures)
+    // {
+    //     std::cout << ai.game.indexToAlg(m.from) << ai.game.indexToAlg(m.to) << std::endl;
+    // }
+    // Ai ai = Ai("rnbqkb2/pp1p1ppr/2p5/3pP3/8/8/PPPP1PPP/R1BQK1NR w KQq -");
+    // Ai ai = Ai("6R1/8/8/K7/P3Q3/8/8/5k2 w - -");
+    // Ai ai = Ai("5k1r/5pp1/4b2p/3pP3/P7/3n4/2q2PPP/3BK2R w - -");
+    // Ai ai = Ai("1r1q1rk1/1bp1bpp1/p3p2p/N1pnB3/8/1P1P1N2/P1PQ1PPP/R3R1K1 w - -");
 
     // Ai ai = Ai("r4k1r/2pnn1p1/4bp2/pP1pp3/P3P3/2P1BP1P/2P1BN1P/2KR1R2 b - -");
     // Ai ai = Ai("r1bqkb1r/3n1ppp/p3p3/1ppp4/8/1PB1PN1P/P1PP1PP1/RN1QK2R b KQkq -");
@@ -469,7 +664,7 @@ int main(int argc, char *argv[])
     // ai.game.position.print();
 
     // auto t1 = std::chrono::high_resolution_clock::now();
-    ai.makeBestMoveAB(ai.game.position.currTurn);
+    // ai.makeBestMoveAB(ai.game.position.currTurn);
     // auto t2 = std::chrono::high_resolution_clock::now();
     // std::chrono::duration<double, std::milli> time = t2 - t1;
     // std::cout << time.count() << std::endl;

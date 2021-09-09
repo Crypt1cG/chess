@@ -22,10 +22,10 @@
 				"-Wshadow",
 
 				// optimizations
-				"-Ofast", // definetly does a lot of good (almost an order of magnitude)
+				// "-Ofast", // definetly does a lot of good (almost an order of magnitude)
 				// "-O2",
 				// "-funroll-loops", // maybe this is actually bad
-				"-march=native", // seems to help a decent amount
+				// "-march=native", // seems to help a decent amount
 				// "-fno-exceptions",
 				// "-g",
 				// "-Wa,-alh",
