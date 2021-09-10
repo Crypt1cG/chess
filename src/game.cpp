@@ -184,6 +184,307 @@ std::vector<Move> Game::getAllCaptureMoves(int color, bool pseudoLegal)
     return results;
 }
 
+std::vector<Move> Game::getSEECaptures(int square, int color)
+{
+    /* these moves are ordered by piece value ascending (pawn captures first, king last) */
+    U64 opPieces = *(position.bitboards[12 + !color]); // [12] is white pieces, [13] is black
+    U64 targetSquare = 1ull << square;
+    std::vector<Move> results;
+
+    //! i dont think this does en passant moves. Oh well
+    /* pawn moves */
+    U64 rPawnCaptures = pawnRAttacks(color) & targetSquare;
+    if (rPawnCaptures != 0)
+        pawnTargetsToMoves(rPawnCaptures, (-(color * 2) + 1) * 7, results);
+    U64 lPawnCaptures = pawnLAttacks(color) & targetSquare;
+    if (lPawnCaptures != 0)
+        pawnTargetsToMoves(lPawnCaptures, (-(color * 2) + 1) * 7, results);
+
+    /* knight moves */
+    std::vector<Move> knightMoves;
+    U64 knights = *(position.bitboards[Position::knightIndex + color *  6]);
+    int numKnights = __builtin_popcountll(knights);
+    int pos = -1;
+    for (int i = 0; i < numKnights; i++)
+    {
+        int ind = __builtin_ffsll(knights); // returns 1 + index of LSB
+        knights >>= ind;
+        pos += ind;
+        U64 targets = Game::knightAttacks[pos];
+        targets &= opPieces; // only captures
+        targets &= targetSquare;
+        if (targets != 0)
+        {
+            std::vector<Move> moves = knightAttacksToMoves(targets, pos, Position::knightIndex);
+            knightMoves.insert(knightMoves.end(), moves.begin(), moves.end());
+        }
+    }
+    results.insert(results.end(), knightMoves.begin(), knightMoves.end());
+
+    /* bishop moves */
+    U64 bishops = *(position.bitboards[Position::bishopIndex + 6 * color]);
+    std::vector<Move> bishopAttacks;
+    int numAttackers = __builtin_popcountll(bishops);
+    pos = -1;
+    for (int i = 0; i < numAttackers; i++)
+    {
+        int ind = __builtin_ffsll(bishops); // returns 1 + index of LSB
+        bishops >>= ind;
+        pos += ind;
+        
+        U64 negPos = rayAttacks[pos][0];
+        U64 posPos = rayAttacks[pos][2];
+        U64 posNeg = rayAttacks[pos][4];
+        U64 negNeg = rayAttacks[pos][6];
+
+        // get intersection with pieces
+        negPos &= position.occupency;
+        posPos &= position.occupency;
+        posNeg &= position.occupency;
+        negNeg &= position.occupency;
+
+        negPos &= targetSquare;
+        posPos &= targetSquare;
+        posNeg &= targetSquare;
+        negNeg &= targetSquare;
+
+        if (negPos != 0)
+        {
+            int intPos = __builtin_ffsll(negPos) - 1; // index of first piece intersected by ray
+            negPos ^= Game::rayAttacks[intPos][0]; // chop off the rest of the ray
+            if (negPos & opPieces) // it intersects the enemy pieces, so it is a capture
+                bishopAttacks.push_back(Move(pos, intPos, Position::bishopIndex));
+        }
+        if (posPos != 0)
+        {
+            int intPos = __builtin_ffsll(posPos) - 1; // index of first piece intersected by ray
+            posPos ^= Game::rayAttacks[intPos][2]; // chop off the rest of the ray
+            if (posPos & opPieces) // it intersects the enemy pieces, so it is a capture
+                bishopAttacks.push_back(Move(pos, intPos, Position::bishopIndex));
+        }
+        if (posNeg != 0)
+        {
+            int intPos = 63 - __builtin_clzll(posNeg); // posNeg is negative overall, first intersection will be MSB
+            posNeg ^= Game::rayAttacks[intPos][4]; // chop off the rest of the ray
+            if (posNeg & opPieces) // it intersects the enemy pieces, so it is a capture
+                bishopAttacks.push_back(Move(pos, intPos, Position::bishopIndex));
+        }
+        if (negNeg != 0)
+        {
+            int intPos = 63 - __builtin_clzll(negNeg); // posNeg is negative overall, first intersection will be MSB
+            negNeg ^= Game::rayAttacks[intPos][6]; // chop off the rest of the ray
+            if (negNeg & opPieces) // it intersects the enemy pieces, so it is a capture
+                bishopAttacks.push_back(Move(pos, intPos, Position::bishopIndex));
+        }
+    }
+    results.insert(results.end(), bishopAttacks.begin(), bishopAttacks.end());
+
+    /* rook moves */
+    U64 rooks = *(position.bitboards[Position::rookIndex + 6 * color]);
+    std::vector<Move> rookAttacks;
+    numAttackers = __builtin_popcountll(rooks);
+    pos = -1;
+    for (int i = 0; i < numAttackers; i++)
+    {
+        int ind = __builtin_ffsll(rooks); // returns 1 + index of LSB
+        rooks >>= ind;
+        pos += ind;
+
+        U64 posY = rayAttacks[pos][1];
+        U64 posX = rayAttacks[pos][3];
+        U64 negY = rayAttacks[pos][5];
+        U64 negX = rayAttacks[pos][7];
+
+        // get intersection with enemy pieces
+        posY &= position.occupency;
+        posX &= position.occupency;
+        negY &= position.occupency;
+        negX &= position.occupency;
+
+        posY &= targetSquare;
+        posX &= targetSquare;
+        negY &= targetSquare;
+        negX &= targetSquare;
+
+        if (posY != 0)
+        {
+            int intPos = __builtin_ffsll(posY) - 1; // index of first piece intersected by ray
+            posY ^= Game::rayAttacks[intPos][1]; // chop off the rest of the ray
+            if (posY & opPieces) // it intersects the enemy pieces, so it is a capture
+                rookAttacks.push_back(Move(pos, intPos, Position::rookIndex));
+        }
+        if (posX != 0)
+        {
+            int intPos = __builtin_ffsll(posX) - 1; // index of first piece intersected by ray
+            posX ^= Game::rayAttacks[intPos][3]; // chop off the rest of the ray
+            if (posX & opPieces) // it intersects the enemy pieces, so it is a capture
+                rookAttacks.push_back(Move(pos, intPos, Position::rookIndex));
+        }
+        if (negY != 0)
+        {
+            int intPos = 63 - __builtin_clzll(negY); // index of first piece intersected by ray
+            negY ^= Game::rayAttacks[intPos][5]; // chop off the rest of the ray
+            if (negY & opPieces) // it intersects the enemy pieces, so it is a capture
+                rookAttacks.push_back(Move(pos, intPos, Position::rookIndex));
+        }
+        if (negX != 0)
+        {
+            int intPos = 63 - __builtin_clzll(negX); // index of first piece intersected by ray
+            negX ^= Game::rayAttacks[intPos][7]; // chop off the rest of the ray
+            if (negX & opPieces) // it intersects the enemy pieces, so it is a capture
+                rookAttacks.push_back(Move(pos, intPos, Position::rookIndex));
+        }
+    }
+    results.insert(results.end(), rookAttacks.begin(), rookAttacks.end());
+
+    /* queen diag moves */
+    U64 queens = *(position.bitboards[Position::queenIndex + 6 * color]);
+    std::vector<Move> queenAttacks;
+    int numAttackers = __builtin_popcountll(queens);
+    pos = -1;
+    for (int i = 0; i < numAttackers; i++)
+    {
+        int ind = __builtin_ffsll(queens); // returns 1 + index of LSB
+        queens >>= ind;
+        pos += ind;
+        
+        U64 negPos = rayAttacks[pos][0];
+        U64 posPos = rayAttacks[pos][2];
+        U64 posNeg = rayAttacks[pos][4];
+        U64 negNeg = rayAttacks[pos][6];
+
+        // get intersection with enemy pieces
+        negPos &= position.occupency;
+        posPos &= position.occupency;
+        posNeg &= position.occupency;
+        negNeg &= position.occupency;
+
+        negPos &= targetSquare;
+        posPos &= targetSquare;
+        posNeg &= targetSquare;
+        negNeg &= targetSquare;
+
+        if (negPos != 0)
+        {
+            int intPos = __builtin_ffsll(negPos) - 1; // index of first piece intersected by ray
+            negPos ^= Game::rayAttacks[intPos][0]; // chop off the rest of the ray
+            if (negPos & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+        if (posPos != 0)
+        {
+            int intPos = __builtin_ffsll(posPos) - 1; // index of first piece intersected by ray
+            posPos ^= Game::rayAttacks[intPos][2]; // chop off the rest of the ray
+            if (posPos & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+        if (posNeg != 0)
+        {
+            int intPos = 63 - __builtin_clzll(posNeg); // posNeg is negative overall, first intersection will be MSB
+            posNeg ^= Game::rayAttacks[intPos][4]; // chop off the rest of the ray
+            if (posNeg & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+        if (negNeg != 0)
+        {
+            int intPos = 63 - __builtin_clzll(negNeg); // posNeg is negative overall, first intersection will be MSB
+            negNeg ^= Game::rayAttacks[intPos][6]; // chop off the rest of the ray
+            if (negNeg & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+    }
+
+    /* queen straight moves */
+    U64 queens = *(position.bitboards[Position::queenIndex + 6 * color]);
+    numAttackers = __builtin_popcountll(queens);
+    pos = -1;
+    for (int i = 0; i < numAttackers; i++)
+    {
+        int ind = __builtin_ffsll(queens); // returns 1 + index of LSB
+        queens >>= ind;
+        pos += ind;
+
+        U64 posY = rayAttacks[pos][1];
+        U64 posX = rayAttacks[pos][3];
+        U64 negY = rayAttacks[pos][5];
+        U64 negX = rayAttacks[pos][7];
+
+        // get intersection with enemy pieces
+        posY &= position.occupency;
+        posX &= position.occupency;
+        negY &= position.occupency;
+        negX &= position.occupency;
+
+        posY &= targetSquare;
+        posX &= targetSquare;
+        negY &= targetSquare;
+        negX &= targetSquare;
+
+        if (posY != 0)
+        {
+            int intPos = __builtin_ffsll(posY) - 1; // index of first piece intersected by ray
+            posY ^= Game::rayAttacks[intPos][1]; // chop off the rest of the ray
+            if (posY & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+        if (posX != 0)
+        {
+            int intPos = __builtin_ffsll(posX) - 1; // index of first piece intersected by ray
+            posX ^= Game::rayAttacks[intPos][3]; // chop off the rest of the ray
+            if (posX & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+        if (negY != 0)
+        {
+            int intPos = 63 - __builtin_clzll(negY); // index of first piece intersected by ray
+            negY ^= Game::rayAttacks[intPos][5]; // chop off the rest of the ray
+            if (negY & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+        if (negX != 0)
+        {
+            int intPos = 63 - __builtin_clzll(negX); // index of first piece intersected by ray
+            negX ^= Game::rayAttacks[intPos][7]; // chop off the rest of the ray
+            if (negX & opPieces) // it intersects the enemy pieces, so it is a capture
+                queenAttacks.push_back(Move(pos, intPos, Position::queenIndex));
+        }
+    }
+    results.insert(results.end(), queenAttacks.begin(), queenAttacks.end());
+
+    /* king stuff */
+    int kingPos = __builtin_ffsll(*(position.bitboards[Position::kingIndex + 6 * color])) - 1;
+    U64 targets = Game::kingAttacks[kingPos];
+    targets &= opPieces;
+    targets &= targetSquare;
+    std::vector<Move> kingMoves;
+    if (targets != 0)
+        std::vector<Move> kingMoves = knightAttacksToMoves(targets, kingPos, Position::kingIndex);
+    results.insert(results.end(), kingMoves.begin(), kingMoves.end());
+
+    std::vector<Move> finalMoves;
+    finalMoves.reserve(results.size());
+    Position original = position;
+    if (isCheck(color))
+    {
+        for (Move& m : results)
+        {
+            movePiece(m);
+            if (!isCheck(color))
+                finalMoves.push_back(m);
+            position = original;
+        }
+    }
+    else
+    {
+        for (Move& m : results)
+        {
+            if (!moveCausesCheck(m, color))
+                finalMoves.push_back(m);
+            position = original;
+        }
+    }
+}
+
 std::vector<Move> Game::getAllKingMoves(int color)
 {
     U64 king;

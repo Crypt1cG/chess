@@ -94,7 +94,7 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
     int eval = evaluate(game.position);
     if (allMoves.size() == 0) return evaluate(game.position);
     Position original = game.position;
-
+    // Move bestMove(0, 0, 0);
     if (color == Position::whiteID)
     {
         // not entirely sure what these two lines do conceptually, but they are critical
@@ -131,7 +131,11 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
                 {
                     int val = quiescenceSearch(alpha, beta, !color);
                     if (val >= beta) return beta;
-                    if (val > alpha) alpha = val;
+                    if (val > alpha)
+                    {
+                        alpha = val;
+                        // bestMove = m;
+                    }
                 }
                 game.position = original;
             }
@@ -158,7 +162,11 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
                 {
                     int val = quiescenceSearch(alpha, beta, !color);
                     if (val >= beta) return beta;
-                    if (val > alpha) alpha = val;
+                    if (val > alpha)
+                    {
+                        alpha = val;
+                        // bestMove = m;
+                    }
                 }
                 game.position = original;
             }
@@ -201,7 +209,11 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
                 {
                     int val = quiescenceSearch(alpha, beta, !color);
                     if (val <= alpha) return alpha;
-                    if (val < beta) beta = val;
+                    if (val < beta)
+                    {
+                        beta = val;
+                        // bestMove = m;
+                    }
                 }
                 game.position = original;
             }
@@ -228,7 +240,11 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
                 {
                     int val = quiescenceSearch(alpha, beta, !color);
                     if (val <= alpha) return alpha;
-                    if (val < beta) beta = val;
+                    if (val < beta)
+                    {
+                        beta = val;
+                        // bestMove = m;
+                    }
                 }
                 game.position = original;
             }
@@ -268,11 +284,15 @@ int Ai::alphaBeta(int depth, int alpha, int beta, int color)
     //? is this true????
 
     //? should we check if it's mate/stalemate before this?
-    if (depth == 0) return quiescenceSearch(alpha, beta, color);
+    if (depth == 0)
+    {
+        return quiescenceSearch(alpha, beta, color);
+    }   
     // if (depth == 0) return evaluate(game.position);
 
     std::vector<Move> allMoves = game.getAllMoves(color, true);
     Position original = game.position;
+    
 
     if (color == Position::whiteID) // maximising player
     {
@@ -408,7 +428,7 @@ void Ai::makeBestMoveAB(int color)
                 {
                     // ok so - you can't prune any of the first level moves, all calls to AB should be with +inf and -inf
                     int score = alphaBeta(depth - 1, alpha, beta, !color);
-                    std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
+                    // std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
                     //? i dont think we need the other alpha beta code............
                     if (score > bestScore)
                     {
@@ -426,7 +446,7 @@ void Ai::makeBestMoveAB(int color)
                 if (!game.moveCausesCheck(move, color)) // moveCausesCheck makes the move
                 {
                     int score = alphaBeta(depth - 1, alpha, beta, !color);
-                    std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
+                    // std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
                     //? i dont think we need the other alpha beta code............
                     if (score > bestScore)
                     {
@@ -481,7 +501,7 @@ void Ai::makeBestMoveAB(int color)
                 if (!game.moveCausesCheck(move, color)) // moveCausesCheck makes the move
                 {
                     int score = alphaBeta(depth - 1, alpha, beta, !color);
-                    std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
+                    // std::cout << game.indexToAlg(move.from) << game.indexToAlg(move.to) << ": " << score << std::endl;
                     //? i dont think we need the other alpha beta code............
                     if (score < bestScore)
                     {
@@ -501,7 +521,7 @@ void Ai::makeBestMoveAB(int color)
 
 int Ai::evaluate(Position p)
 {
-    p.print();
+    // p.print();
     int whiteScore = 0;
     int blackScore = 0;
 
@@ -630,13 +650,13 @@ void printU64(U64 num)
 int main(int argc, char *argv[])
 {
     
-    // std::string fen = argv[1]; // [0] is call to program
+    std::string fen = argv[1]; // [0] is call to program
     // int depth = std::stoi(argv[2]);
 
     /* PERFT TESTS */
-    // Ai ai = Ai(fen);
-    Ai ai = Ai("r1bqkbnr/pp1n2pp/2p2p2/3Np1B1/3pP3/3P1N2/PPP2PPP/R2QKB1R w KQkq -");
-    std::cout << ai.quiescenceSearch(INT32_MIN, INT32_MAX, Position::whiteID) << std::endl;
+    Ai ai = Ai(fen);
+    // Ai ai = Ai("r1bqkbnr/pp1n2pp/2p2p2/3Np1B1/3pP3/3P1N2/PPP2PPP/R2QKB1R w KQkq -");
+    // std::cout << ai.quiescenceSearch(INT32_MIN, INT32_MAX, Position::whiteID) << std::endl;
     // std::vector<Move> captures = ai.game.getAllCaptureMoves(Position::whiteID);
     // for (Move& m : captures)
     // {
@@ -664,7 +684,7 @@ int main(int argc, char *argv[])
     // ai.game.position.print();
 
     // auto t1 = std::chrono::high_resolution_clock::now();
-    // ai.makeBestMoveAB(ai.game.position.currTurn);
+    ai.makeBestMoveAB(ai.game.position.currTurn);
     // auto t2 = std::chrono::high_resolution_clock::now();
     // std::chrono::duration<double, std::milli> time = t2 - t1;
     // std::cout << time.count() << std::endl;

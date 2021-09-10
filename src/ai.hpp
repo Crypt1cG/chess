@@ -9,7 +9,7 @@ public:
     static const int bishopVal = 300;
     static const int rookVal   = 500;
     static const int queenVal  = 900;
-    static const int DEPTH = 1;
+    static const int DEPTH = 4;
 
     // for evaluation
     //TODO: check these... should match what's found in res/maps

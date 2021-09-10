@@ -20,6 +20,7 @@ public:
 
     std::vector<Move> getAllMoves(int color, bool pseudoLegal=false);
     std::vector<Move> getAllCaptureMoves(int color, bool pseudoLegal=false);
+    std::vector<Move> getSEECaptures(int square, int color);
 
     std::vector<Move> getAllKingMoves(int color);
 
