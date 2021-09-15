@@ -9,7 +9,7 @@ public:
     static const int bishopVal = 300;
     static const int rookVal   = 500;
     static const int queenVal  = 900;
-    static const int DEPTH = 4;
+    static const int DEPTH = 5;
 
     // for evaluation
     //TODO: check these... should match what's found in res/maps
@@ -59,7 +59,7 @@ public:
     int evaluate(Position p);
     int alphaBeta(int depth, int alpha, int beta, int color);
     int quiescenceSearch(int alpha, int beta, int color);
-    int staticExchangeEval(int square, int color);
+    int staticExchangeEval(int square, int color, std::queue<Move> remainingCaptures, std::queue<Move> opMoves);
     int SEECapture(Move move, int color);
     void makeBestMoveAB(int color);
 };

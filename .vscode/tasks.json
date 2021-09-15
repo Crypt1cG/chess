@@ -5,7 +5,7 @@
 			"type": "cppbuild",
 			"label": "C/C++: g++ build active file",
 			"command": "/usr/bin/g++",
-			// "command": "/bin/g++",
+			// "command": "/usr/bin/clang++",
 			"args": [
 				"-g",
 				// "-pg",

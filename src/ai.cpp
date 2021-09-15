@@ -108,69 +108,75 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
 
         if (eval > alpha) alpha = eval;
 
-        if (game.isCheck(color))
+        // if (game.isCheck(color))
+        // {
+        for (Move& m : allMoves)
         {
-            for (Move& m : allMoves)
-            {
-                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
-                int capPieceIndex = game.position.at(m.to);
-                int maxVal;
-                if (capPieceIndex == Position::pawnIndex)
-                    maxVal = 300; // pawn is 100, 200 safety margin
-                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
-                    maxVal = 500; // bishop/knight are 300, 200 safety margin
-                else if (capPieceIndex == Position::rookIndex)
-                    maxVal = 700; // rook is 500, 200 safety margin
-                else maxVal = 1100; // queen is 900, 200 safety margin
-                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
-                if (eval + maxVal < alpha) 
-                    return alpha;
+            // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+            int capPieceIndex = game.position.at(m.to);
+            int maxVal;
+            if (capPieceIndex == Position::pawnIndex)
+                maxVal = 300; // pawn is 100, 200 safety margin
+            else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+                maxVal = 500; // bishop/knight are 300, 200 safety margin
+            else if (capPieceIndex == Position::rookIndex)
+                maxVal = 700; // rook is 500, 200 safety margin
+            else maxVal = 1100; // queen is 900, 200 safety margin
+            // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+            if (eval + maxVal < alpha) 
+                return alpha;
 
+            if (SEECapture(m, color) > 0) // basically if the move is worth playing (if the trades are favorable) - might miss sacing a pawn for positional advantage
+            {
                 game.movePiece(m);
-                if (!game.isCheck(color))
+                // if (!game.isCheck(color))
+                // {
+                int val = quiescenceSearch(alpha, beta, !color);
+                if (val >= beta) return beta;
+                if (val > alpha)
                 {
-                    int val = quiescenceSearch(alpha, beta, !color);
-                    if (val >= beta) return beta;
-                    if (val > alpha)
-                    {
-                        alpha = val;
-                        // bestMove = m;
-                    }
+                    alpha = val;
+                    // bestMove = m;
                 }
+                // }
                 game.position = original;
             }
         }
-        else
-        {
-            for (Move& m : allMoves)
-            {
-                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
-                int capPieceIndex = game.position.at(m.to);
-                int maxVal;
-                if (capPieceIndex == Position::pawnIndex)
-                    maxVal = 300; // pawn is 100, 200 safety margin
-                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
-                    maxVal = 500; // bishop/knight are 300, 200 safety margin
-                else if (capPieceIndex == Position::rookIndex)
-                    maxVal = 700; // rook is 500, 200 safety margin
-                else maxVal = 1100; // queen is 900, 200 safety margin
-                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
-                if (eval + maxVal < alpha) 
-                    return alpha;
+        // }
+        // else
+        // {
+        //     for (Move& m : allMoves)
+        //     {
+        //         // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+        //         int capPieceIndex = game.position.at(m.to);
+        //         int maxVal;
+        //         if (capPieceIndex == Position::pawnIndex)
+        //             maxVal = 300; // pawn is 100, 200 safety margin
+        //         else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+        //             maxVal = 500; // bishop/knight are 300, 200 safety margin
+        //         else if (capPieceIndex == Position::rookIndex)
+        //             maxVal = 700; // rook is 500, 200 safety margin
+        //         else maxVal = 1100; // queen is 900, 200 safety margin
+        //         // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+        //         if (eval + maxVal < alpha) 
+        //             return alpha;
 
-                if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
-                {
-                    int val = quiescenceSearch(alpha, beta, !color);
-                    if (val >= beta) return beta;
-                    if (val > alpha)
-                    {
-                        alpha = val;
-                        // bestMove = m;
-                    }
-                }
-                game.position = original;
-            }
-        }
+        //         if (SEECapture(m, color) > 0) // basically if the move is worth playing (if the trades are favorable)
+        //         {
+        //             if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
+        //             {
+        //                 int val = quiescenceSearch(alpha, beta, !color);
+        //                 if (val >= beta) return beta;
+        //                 if (val > alpha)
+        //                 {
+        //                     alpha = val;
+        //                     // bestMove = m;
+        //                 }
+        //             }
+        //             game.position = original;
+        //         }
+        //     }
+        // }
         return alpha;
     }
     else
@@ -186,94 +192,137 @@ int Ai::quiescenceSearch(int alpha, int beta, int color)
 
         if (eval < beta) beta = eval;
 
-        if (game.isCheck(color))
+        // if (game.isCheck(color))
+        // {
+        for (Move& m : allMoves)
         {
-            for (Move& m : allMoves)
-            {
-                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
-                int capPieceIndex = game.position.at(m.to);
-                int maxVal;
-                if (capPieceIndex == Position::pawnIndex)
-                    maxVal = -300; // pawn is 100, 200 safety margin
-                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
-                    maxVal = -500; // bishop/knight are 300, 200 safety margin
-                else if (capPieceIndex == Position::rookIndex)
-                    maxVal = -700; // rook is 500, 200 safety margin
-                else maxVal = -1100; // queen is 900, 200 safety margin
-                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
-                if (eval + maxVal > beta) 
-                    return beta;
+            // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+            int capPieceIndex = game.position.at(m.to);
+            int maxVal;
+            if (capPieceIndex == Position::pawnIndex)
+                maxVal = -300; // pawn is 100, 200 safety margin
+            else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+                maxVal = -500; // bishop/knight are 300, 200 safety margin
+            else if (capPieceIndex == Position::rookIndex)
+                maxVal = -700; // rook is 500, 200 safety margin
+            else maxVal = -1100; // queen is 900, 200 safety margin
+            // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+            if (eval + maxVal > beta) 
+                return beta;
 
+            if (SEECapture(m, color) > 0) // basically if move is worth playing (if the trades are favorable) *NOTE* is positive when good for black
+            {
                 game.movePiece(m);
-                if (!game.isCheck(color))
+                // if (!game.isCheck(color))
+                // {
+                int val = quiescenceSearch(alpha, beta, !color);
+                if (val <= alpha) return alpha;
+                if (val < beta)
                 {
-                    int val = quiescenceSearch(alpha, beta, !color);
-                    if (val <= alpha) return alpha;
-                    if (val < beta)
-                    {
-                        beta = val;
-                        // bestMove = m;
-                    }
+                    beta = val;
+                    // bestMove = m;
                 }
+                // }
                 game.position = original;
             }
         }
-        else
-        {
-            for (Move& m : allMoves)
-            {
-                // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
-                int capPieceIndex = game.position.at(m.to);
-                int maxVal;
-                if (capPieceIndex == Position::pawnIndex)
-                    maxVal = -300; // pawn is 100, 200 safety margin
-                else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
-                    maxVal = -500; // bishop/knight are 300, 200 safety margin
-                else if (capPieceIndex == Position::rookIndex)
-                    maxVal = -700; // rook is 500, 200 safety margin
-                else maxVal = -1100; // queen is 900, 200 safety margin
-                // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
-                if (eval + maxVal > beta) 
-                    return beta;
+        // }
+        // else
+        // {
+        //     for (Move& m : allMoves)
+        //     {
+        //         // delta pruning (i think) https://www.chessprogramming.org/Delta_Pruning
+        //         int capPieceIndex = game.position.at(m.to);
+        //         int maxVal;
+        //         if (capPieceIndex == Position::pawnIndex)
+        //             maxVal = -300; // pawn is 100, 200 safety margin
+        //         else if (capPieceIndex == Position::knightIndex || capPieceIndex == Position::bishopIndex)
+        //             maxVal = -500; // bishop/knight are 300, 200 safety margin
+        //         else if (capPieceIndex == Position::rookIndex)
+        //             maxVal = -700; // rook is 500, 200 safety margin
+        //         else maxVal = -1100; // queen is 900, 200 safety margin
+        //         // ok so - best case scenario, we get the piece for free (no trade), if after that, we still have a better option, this move is not good
+        //         if (eval + maxVal > beta) 
+        //             return beta;
 
-                if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
-                {
-                    int val = quiescenceSearch(alpha, beta, !color);
-                    if (val <= alpha) return alpha;
-                    if (val < beta)
-                    {
-                        beta = val;
-                        // bestMove = m;
-                    }
-                }
-                game.position = original;
-            }
-        }
+        //         if (SEECapture(m, color) > 0) // basically if move is worth playing (if the trades are favorable) *NOTE* is positive when good for black
+        //         {
+        //             if (!game.moveCausesCheck(m, color)) // moveCausesCheck makes the move
+        //             {
+        //                 int val = quiescenceSearch(alpha, beta, !color);
+        //                 if (val <= alpha) return alpha;
+        //                 if (val < beta)
+        //                 {
+        //                     beta = val;
+        //                     // bestMove = m;
+        //                 }
+        //             }
+        //             game.position = original;
+        //         }
+        //     }
+        // }
         return beta;
     }
 }
 
-int Ai::staticExchangeEval(int square, int color)
+int Ai::staticExchangeEval(int square, int color, std::queue<Move> remainingCaptures, std::queue<Move> opMoves)
 {
     // https://www.chessprogramming.org/Static_Exchange_Evaluation
-    std::vector<Move> thisColorCaptures = game.getAllCaptureMoves(color, true);
-    std::vector<Move> captures;
-    std::vector<Move> allOpCaptures = game.getAllCaptureMoves(!color, true);
-    std::vector<Move> opCaptures;
+    // std::queue<Move> thisColorCaptures = game.getSEECaptures(square, color);
+    // std::queue<Move> allOpCaptures = game.getSEECaptures(square, !color);
     int value = 0;
 
-    for (Move& m : thisColorCaptures)
+    if (remainingCaptures.size() != 0)
     {
-        if (m.to == square) captures.push_back(m);
-    }
-    for (Move& m : allOpCaptures)
-    {
-        if (m.to == square) opCaptures.push_back(m);
-    }
-    if (captures.size() != 0)
-    {
+        Position original = game.position;
+        Move move = remainingCaptures.front();
+        remainingCaptures.pop();
+        
+        int type = game.position.at(move.to);
+        game.movePiece(move);
 
+        int score;
+        if (type == Position::pawnIndex)
+            score = pawnVal;
+        else if (type == Position::knightIndex)
+            score = knightVal;
+        else if (type == Position::bishopIndex)
+            score = bishopVal;
+        else if (type == Position::rookIndex)
+            score = rookVal;
+        else score = queenVal;
+
+        value = std::max(0, score - staticExchangeEval(square, !color, opMoves, remainingCaptures)); // not entirely sure why we need to use max with zero, but this function will return 0 if the capture should not be made
+        game.position = original;
     }
+    return value;
+}
+
+// i think this works
+int Ai::SEECapture(Move move, int color)
+{
+    int value = 0;
+
+    Position original = game.position;
+    int type = game.position.at(move.to);
+    int score;
+    if (type == Position::pawnIndex)
+        score = pawnVal;
+    else if (type == Position::knightIndex)
+        score = knightVal;
+    else if (type == Position::bishopIndex)
+        score = bishopVal;
+    else if (type == Position::rookIndex)
+        score = rookVal;
+    else score = queenVal;
+
+    game.movePiece(move);
+    *(game.position.bitboards[12 + !color]) |= 1ull << move.to; // set the target square bit in the enemies pieces so that we can find captures excluding the one made above
+    std::queue<Move> captures = game.getSEECaptures(move.to, color);
+    *(game.position.bitboards[12 + !color]) ^= 1ull << move.to; // unset so we don't cause trouble 
+    std::queue<Move> opCaptures = game.getSEECaptures(move.to, !color);
+    value = score - staticExchangeEval(move.to, !color, opCaptures, captures);
+    game.position = original;
     return value;
 }
 
@@ -407,7 +456,8 @@ void Ai::makeBestMoveAB(int color)
     //! it never picks the one that actually gets it there, plays a diff move knowing
     //! that it is winning
     int depth = DEPTH;
-    if (__builtin_popcountll(game.position.occupency) < 12) depth++;
+    if (__builtin_popcountll(game.position.occupency) < 16) depth++;
+    if (game.isCheck(color)) depth++;
 
     std::vector<Move> allMoves = game.getAllMoves(color, true);
     Position original = game.position;
@@ -652,15 +702,30 @@ int main(int argc, char *argv[])
     
     std::string fen = argv[1]; // [0] is call to program
     // int depth = std::stoi(argv[2]);
+    // int depth = 6;
 
     /* PERFT TESTS */
     Ai ai = Ai(fen);
+    // Ai ai = Ai();
+    //! problem: https://lichess.org/WIfg6wNI/white#66
+    //! probken: https://lichess.org/SIgUMp0P/white#34 and like 3 moves later or something
+    // Ai ai = Ai("r3kbr1/1b5p/p3pq2/1P6/3p4/1B3N2/PPP2PPP/R2Q1RK1 w q -");
+    // Ai ai = Ai("r3kbr1/7p/P3pq2/8/3p4/1B3b2/PPP2PPP/R2Q1RK1 w q -");
+    // Move move = Move(54, 45, Position::pawnIndex);
+    // Position original = ai.game.position;
+    // if (ai.game.moveCausesCheck(move, Position::whiteID))
+        // std::cout << "this is supposed to happen" << std::endl;
+    // else std::cout << "this is not good" << std::endl;
+    // ai.game.position = original;
+    // Ai ai = Ai("7k/3rn3/8/3B4/8/3Q4/8/K7 w - -");
+    // std::cout << ai.SEECapture(Move(11, 27, Position::rookIndex), Position::blackID) << std::endl;
+
     // Ai ai = Ai("r1bqkbnr/pp1n2pp/2p2p2/3Np1B1/3pP3/3P1N2/PPP2PPP/R2QKB1R w KQkq -");
     // std::cout << ai.quiescenceSearch(INT32_MIN, INT32_MAX, Position::whiteID) << std::endl;
     // std::vector<Move> captures = ai.game.getAllCaptureMoves(Position::whiteID);
     // for (Move& m : captures)
     // {
-    //     std::cout << ai.game.indexToAlg(m.from) << ai.game.indexToAlg(m.to) << std::endl;
+        // std::cout << ai.game.indexToAlg(m.from) << ai.game.indexToAlg(m.to) << std::endl;
     // }
     // Ai ai = Ai("rnbqkb2/pp1p1ppr/2p5/3pP3/8/8/PPPP1PPP/R1BQK1NR w KQq -");
     // Ai ai = Ai("6R1/8/8/K7/P3Q3/8/8/5k2 w - -");

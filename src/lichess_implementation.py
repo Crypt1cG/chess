@@ -1,5 +1,5 @@
 '''makes the ai able to play games directly on lichess using the api
-TOKEN: API_TOKEN'''
+TOKEN: zBwvRJV8k1a9ZtWo'''
 
 # TODO: keep track of board using a board array, turn into FEN to give to ai to make move
 # NOTE: could try storing an FEN string instead of board, update that for every move
@@ -10,7 +10,7 @@ import subprocess
 session: berserk.session
 client: berserk.Client
 board = []
-TOKEN = "API_TOKEN"
+TOKEN = "zBwvRJV8k1a9ZtWo"
 ID: str
 COLOR = 'white'
 LEVEL = 6
@@ -395,7 +395,7 @@ def board_to_FEN(b: list[str]) -> str:
     '''
 
 def main():
-    global board, client, session
+    global board, client, session, ID, COLOR
     board = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
              'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
              ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
@@ -415,9 +415,21 @@ def main():
     
     session = berserk.TokenSession(TOKEN)
     client = berserk.Client(session=session)
-    start_game_ai(LEVEL, COLOR)
-    input("waiting")
-    game_loop()
+    for event in client.bots.stream_incoming_events():
+        print(event)
+        if event['type'] == 'challenge' and event['challenge']['variant']['key'] == 'standard':
+            client.bots.accept_challenge(event['challenge']['id'])
+            color = event['challenge']['color']
+            if (color == 'black'):
+                COLOR = 'white'
+            else:
+                COLOR = 'black'
+        elif event['type'] == 'gameStart':
+            ID = event['game']['id']
+            game_loop()
+    # start_game_ai(LEVEL, COLOR)
+    # input("waiting")
+    # game_loop()
 
     ###########################
     # END IMPORTANT GAME CODE #

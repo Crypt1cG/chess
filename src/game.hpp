@@ -1,5 +1,6 @@
 #include "position.hpp"
 #include <vector>
+#include <queue>
 #include "move.hpp"
 
 #pragma once
@@ -20,7 +21,7 @@ public:
 
     std::vector<Move> getAllMoves(int color, bool pseudoLegal=false);
     std::vector<Move> getAllCaptureMoves(int color, bool pseudoLegal=false);
-    std::vector<Move> getSEECaptures(int square, int color);
+    std::queue<Move> getSEECaptures(int square, int color);
 
     std::vector<Move> getAllKingMoves(int color);
 
