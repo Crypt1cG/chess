@@ -35,7 +35,7 @@ def make_move_lichess(start: int, end: int):
             print('got that weird error again')
             print(move_str)
 
-def make_move_board(b: list[str], start: int, dest: int):
+def make_move_board(b: list, start: int, dest: int):
     p: str
     p = b[start]
     if dest >= 0:
@@ -260,7 +260,7 @@ def game_loop():
                     pass
         
 
-def board_to_FEN(b: list[str]) -> str:
+def board_to_FEN(b: list) -> str:
     '''NOTE: does not return a fully valid FEN string - en passant target does
     not include a rank (uses 0), also omits the halfmove clock and fullmove number
     this string is however compatible with my chess ai'''
