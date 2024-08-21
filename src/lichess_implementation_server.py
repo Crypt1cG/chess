@@ -1,5 +1,5 @@
 '''makes the ai able to play games directly on lichess using the api
-TOKEN: zBwvRJV8k1a9ZtWo'''
+TOKEN: API_TOKEN'''
 
 # TODO: keep track of board using a board array, turn into FEN to give to ai to make move
 # NOTE: could try storing an FEN string instead of board, update that for every move
@@ -10,7 +10,7 @@ import subprocess
 session: berserk.session
 client: berserk.Client
 board = []
-TOKEN = "zBwvRJV8k1a9ZtWo"
+TOKEN = "API_TOKEN"
 ID: str
 COLOR = 'white'
 LEVEL = 6
